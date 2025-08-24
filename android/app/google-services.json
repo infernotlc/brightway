@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "448345543449",
+    "firebase_url": "https://brightway-d41b7-default-rtdb.firebaseio.com",
+    "project_id": "brightway-d41b7",
+    "storage_bucket": "brightway-d41b7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:448345543449:android:a94433135635ffa0f4ab88",
+        "android_client_info": {
+          "package_name": "com.example.brightway"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDMPS2MaLkV0OVA2kcgEUJ31Wp-daDFCXI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
