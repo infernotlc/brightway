@@ -1,5 +1,6 @@
 # BrightWay - Flutter App with Clean Architecture
 
+
 A Flutter application built with clean architecture principles, featuring Firebase authentication and role-based navigation.
 
 ## Features
@@ -186,3 +187,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Support
 
 For support and questions, please open an issue in the GitHub repository.
+
+
+<img width="768" height="125" alt="app_flow_diagram" src="https://github.com/user-attachments/assets/0539fbff-959a-4cc7-a709-57edb1b56a11" />
+
