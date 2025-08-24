@@ -1,17 +1,1 @@
-{
-  "firestore": {
-    "database": "(default)",
-    "location": "eur3",
-    "rules": "firestore.rules",
-    "indexes": "firestore.indexes.json"
-  },
-  "storage": {
-    "rules": "storage.rules"
-  },
-  "remoteconfig": {
-    "template": "remoteconfig.template.json"
-  },
-  "database": {
-    "rules": "database.rules.json"
-  }
-}
+{"firestore":{"database":"(default)","location":"eur3","rules":"firestore.rules","indexes":"firestore.indexes.json"},"storage":{"rules":"storage.rules"},"remoteconfig":{"template":"remoteconfig.template.json"},"database":{"rules":"database.rules.json"},"flutter":{"platforms":{"android":{"default":{"projectId":"brightway-d41b7","appId":"1:448345543449:android:a94433135635ffa0f4ab88","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"brightway-d41b7","configurations":{"android":"1:448345543449:android:a94433135635ffa0f4ab88","ios":"1:448345543449:ios:1927a6c02b34d2e5f4ab88","macos":"1:448345543449:ios:1927a6c02b34d2e5f4ab88","web":"1:448345543449:web:74f9fba632447dedf4ab88","windows":"1:448345543449:web:8956a669b99efe8af4ab88"}}}}}}
