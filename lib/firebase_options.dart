@@ -46,7 +46,6 @@ class DefaultFirebaseOptions {
     messagingSenderId: '448345543449',
     projectId: 'brightway-d41b7',
     authDomain: 'brightway-d41b7.firebaseapp.com',
-    databaseURL: 'https://brightway-d41b7-default-rtdb.firebaseio.com',
     storageBucket: 'brightway-d41b7.firebasestorage.app',
     measurementId: 'G-ME70FYWYCV',
   );
@@ -56,7 +55,6 @@ class DefaultFirebaseOptions {
     appId: '1:448345543449:android:a94433135635ffa0f4ab88',
     messagingSenderId: '448345543449',
     projectId: 'brightway-d41b7',
-    databaseURL: 'https://brightway-d41b7-default-rtdb.firebaseio.com',
     storageBucket: 'brightway-d41b7.firebasestorage.app',
   );
 
@@ -65,7 +63,6 @@ class DefaultFirebaseOptions {
     appId: '1:448345543449:ios:1927a6c02b34d2e5f4ab88',
     messagingSenderId: '448345543449',
     projectId: 'brightway-d41b7',
-    databaseURL: 'https://brightway-d41b7-default-rtdb.firebaseio.com',
     storageBucket: 'brightway-d41b7.firebasestorage.app',
     iosBundleId: 'com.example.brightway',
   );
@@ -75,7 +72,6 @@ class DefaultFirebaseOptions {
     appId: '1:448345543449:ios:1927a6c02b34d2e5f4ab88',
     messagingSenderId: '448345543449',
     projectId: 'brightway-d41b7',
-    databaseURL: 'https://brightway-d41b7-default-rtdb.firebaseio.com',
     storageBucket: 'brightway-d41b7.firebasestorage.app',
     iosBundleId: 'com.example.brightway',
   );
@@ -85,9 +81,6 @@ class DefaultFirebaseOptions {
     appId: '1:448345543449:web:8956a669b99efe8af4ab88',
     messagingSenderId: '448345543449',
     projectId: 'brightway-d41b7',
-    authDomain: 'brightway-d41b7.firebaseapp.com',
-    databaseURL: 'https://brightway-d41b7-default-rtdb.firebaseio.com',
     storageBucket: 'brightway-d41b7.firebasestorage.app',
-    measurementId: 'G-M9D049RFE9',
   );
 }
