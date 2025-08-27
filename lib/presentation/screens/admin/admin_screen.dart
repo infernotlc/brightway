@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/blocs/auth_bloc.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/constants/app_constants.dart';
+import 'place_designer_screen.dart';
 
 class AdminScreen extends StatelessWidget {
   final UserModel userData;
@@ -125,49 +126,15 @@ class AdminScreen extends StatelessWidget {
                   children: [
                     _buildAdminCard(
                       context,
-                      icon: Icons.people,
-                      title: 'User Management',
-                      subtitle: 'Manage users and roles',
+                      icon: Icons.grid_on,
+                      title: 'Place Designer',
+                      subtitle: 'Design grid-based places',
                       onTap: () {
-                        // TODO: Navigate to user management
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('User Management - Coming Soon!')),
-                        );
-                      },
-                    ),
-                    _buildAdminCard(
-                      context,
-                      icon: Icons.analytics,
-                      title: 'Analytics',
-                      subtitle: 'View app statistics',
-                      onTap: () {
-                        // TODO: Navigate to analytics
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Analytics - Coming Soon!')),
-                        );
-                      },
-                    ),
-                    _buildAdminCard(
-                      context,
-                      icon: Icons.settings,
-                      title: 'App Settings',
-                      subtitle: 'Configure app settings',
-                      onTap: () {
-                        // TODO: Navigate to app settings
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('App Settings - Coming Soon!')),
-                        );
-                      },
-                    ),
-                    _buildAdminCard(
-                      context,
-                      icon: Icons.security,
-                      title: 'Security',
-                      subtitle: 'Security settings',
-                      onTap: () {
-                        // TODO: Navigate to security settings
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Security - Coming Soon!')),
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const PlaceDesignerScreen(),
+                          ),
                         );
                       },
                     ),
