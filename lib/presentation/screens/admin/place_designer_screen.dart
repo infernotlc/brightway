@@ -69,9 +69,11 @@ class _PlaceDesignerScreenState extends State<PlaceDesignerScreen>
           _userDesigns = designs;
         });
         
-        // Auto-load design if there's only one
-        if (designs.length == 1) {
-          _loadDesign(designs.first);
+        // Auto-load design if there are designs available
+        if (designs.isNotEmpty) {
+          // Sort by updatedAt to get the newest design first
+          designs.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+          _loadDesign(designs.first); // Load the newest design
         }
       });
     }
@@ -158,6 +160,17 @@ class _PlaceDesignerScreenState extends State<PlaceDesignerScreen>
               label: 'Create Grid',
               action: 'create new grid with specified dimensions',
             ),
+            const SizedBox(width: 8),
+            if (_grid.isNotEmpty)
+              ElevatedButton(
+                onPressed: _clearAllItems,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red.shade100,
+                  foregroundColor: Colors.red.shade700,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                ),
+                child: const Text('Clear'),
+              ),
           ],
         ),
       ),
@@ -197,14 +210,18 @@ class _PlaceDesignerScreenState extends State<PlaceDesignerScreen>
           ),
           const SizedBox(height: 16),
 
-          // Item Selection
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: GridItems.availableItems.map((item) {
-              final isSelected = _selectedItem?.type == item.type;
-              return _buildItemSelector(item, isSelected);
-            }).toList(),
+          // Item Selection - Horizontal Scrollable
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: GridItems.availableItems.map((item) {
+                final isSelected = _selectedItem?.type == item.type;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: _buildItemSelector(item, isSelected),
+                );
+              }).toList(),
+            ),
           ),
 
           const SizedBox(height: 16),
@@ -216,26 +233,6 @@ class _PlaceDesignerScreenState extends State<PlaceDesignerScreen>
               color: Colors.grey.shade600,
             ),
           ),
-          
-          const SizedBox(height: 16),
-          
-          // Clear All Button
-          if (_grid.isNotEmpty)
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: _clearAllItems,
-                    icon: const Icon(Icons.clear_all),
-                    label: const Text('Clear All Items'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red.shade100,
-                      foregroundColor: Colors.red.shade700,
-                    ),
-                  ),
-                ),
-              ],
-            ),
         ],
       ),
     );
@@ -444,6 +441,11 @@ class _PlaceDesignerScreenState extends State<PlaceDesignerScreen>
                 leading: Icon(Icons.grid_on, color: Colors.blue.shade600),
                 title: Text(design.name),
                 subtitle: Text('${design.rows}x${design.cols} - ${design.description}'),
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  onPressed: () => _deleteDesign(design),
+                  tooltip: 'Delete Design',
+                ),
                 onTap: () {
                   Navigator.pop(context);
                   _loadDesign(design);
@@ -546,6 +548,17 @@ class _PlaceDesignerScreenState extends State<PlaceDesignerScreen>
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancel'),
           ),
+          if (_currentDesignId != null)
+            ElevatedButton(
+              onPressed: _isSaving ? null : _saveAsNew,
+              child: _isSaving
+                  ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+                  : const Text('New'),
+            ),
           ElevatedButton(
             onPressed: _isSaving ? null : _saveDesign,
             child: _isSaving
@@ -561,12 +574,110 @@ class _PlaceDesignerScreenState extends State<PlaceDesignerScreen>
     );
   }
 
+  /// Save current design as a new one
+  Future<void> _saveAsNew() async {
+    if (_designNameController.text.trim().isEmpty ||
+        _designDescriptionController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill in all fields'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Check for duplicate design name
+    final designName = _designNameController.text.trim();
+    print('Saving as new design with name: "$designName"');
+    print('Current design ID: $_currentDesignId');
+    print('Available designs: ${_userDesigns.map((d) => d.name).toList()}');
+    
+    if (_isDesignNameDuplicate(designName)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('A design with this name already exists. Please choose a different name.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final userId = _currentUserId;
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('User not authenticated'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      // Save as new design
+      final designId = await DesignService.saveDesign(
+        name: _designNameController.text.trim(),
+        description: _designDescriptionController.text.trim(),
+        rows: _gridConfig!.rows,
+        cols: _gridConfig!.cols,
+        grid: _grid,
+        createdBy: userId,
+      );
+
+      // Reset to new design mode
+      setState(() {
+        _currentDesignId = designId;
+      });
+
+      Navigator.pop(context); // Close save dialog
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Design saved as new! ID: $designId'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to save design: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() {
+        _isSaving = false;
+      });
+    }
+  }
+
   Future<void> _saveDesign() async {
     if (_designNameController.text.trim().isEmpty ||
         _designDescriptionController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please fill in all fields'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Check for duplicate design name
+    final designName = _designNameController.text.trim();
+    print('Saving design with name: "$designName"');
+    print('Current design ID: $_currentDesignId');
+    print('Available designs: ${_userDesigns.map((d) => d.name).toList()}');
+    
+    if (_isDesignNameDuplicate(designName)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('A design with this name already exists. Please choose a different name.'),
           backgroundColor: Colors.red,
         ),
       );
@@ -674,6 +785,35 @@ class _PlaceDesignerScreenState extends State<PlaceDesignerScreen>
     return items;
   }
 
+  /// Check if design name already exists for current user
+  bool _isDesignNameDuplicate(String name) {
+    if (name.trim().isEmpty) return false;
+    
+    final trimmedName = name.trim().toLowerCase();
+    print('Checking duplicate for name: "$trimmedName"');
+    print('Current design ID: $_currentDesignId');
+    print('Available designs: ${_userDesigns.map((d) => '${d.name} (${d.id})').toList()}');
+    
+    if (_currentDesignId != null) {
+      // When updating, exclude current design from duplicate check
+      // This allows updating with the same name
+      final hasDuplicate = _userDesigns.any((design) => 
+        design.name.toLowerCase() == trimmedName && 
+        design.id != _currentDesignId
+      );
+      print('Update mode - Has duplicate: $hasDuplicate');
+      return hasDuplicate;
+    } else {
+      // When creating new, NEVER allow duplicate names
+      // Check against ALL existing designs, regardless of count
+      final hasDuplicate = _userDesigns.any((design) => 
+        design.name.toLowerCase() == trimmedName
+      );
+      print('New mode - Has duplicate: $hasDuplicate');
+      return hasDuplicate;
+    }
+  }
+
   /// Clear all items from the grid
   void _clearAllItems() {
     if (_grid.isEmpty) return;
@@ -687,5 +827,75 @@ class _PlaceDesignerScreenState extends State<PlaceDesignerScreen>
         ),
       );
     });
+  }
+
+  /// Delete a design
+  Future<void> _deleteDesign(Design design) async {
+    final userId = _currentUserId;
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('User not authenticated'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Deletion'),
+        content: Text('Are you sure you want to delete the design "${design.name}"? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red.shade100,
+              foregroundColor: Colors.red.shade700,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await DesignService.deleteUserDesign(userId, design.id);
+        
+        // Close the load dialog to show updated list
+        Navigator.of(context).pop();
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Design "${design.name}" deleted successfully.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        
+        // If the deleted design was the currently loaded one, clear the grid
+        if (_currentDesignId == design.id) {
+          setState(() {
+            _currentDesignId = null;
+            _gridConfig = null;
+            _grid = [];
+            _designNameController.text = 'My Design';
+            _designDescriptionController.text = 'A custom place design';
+          });
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to delete design: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }
