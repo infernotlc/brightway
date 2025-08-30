@@ -43,6 +43,9 @@ dependencies:
   # State management (Bloc örnek)
   flutter_bloc: ^9.1.1
 
+  # Text-to-Speech for navigation
+  flutter_tts: ^3.8.5
+
   # Accessibility support is built into Flutter framework
 
   # The following adds the Cupertino Icons font to your application.

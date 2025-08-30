@@ -157,4 +157,43 @@ class DesignService {
       throw Exception('Failed to delete design: $e');
     }
   }
+
+  /// Get all admin designs (these are the places that users see)
+  static Stream<List<Design>> getAdminDesigns() {
+    return _firestore
+        .collectionGroup('designs')
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+        .map((doc) => Design.fromMap(doc.data(), doc.id))
+        .toList());
+  }
+
+  /// Get admin user display name by user ID
+  static Future<String> getAdminDisplayName(String userId) async {
+    try {
+      final doc = await _firestore.collection('users').doc(userId).get();
+      if (doc.exists) {
+        final data = doc.data();
+        return data?['displayName'] ?? data?['email'] ?? 'Unknown Admin';
+      }
+      return 'Unknown Admin';
+    } catch (e) {
+      return 'Unknown Admin';
+    }
+  }
+
+  static Future<String> getPlaceDisplayName(String userId) async {
+    try {
+      final doc = await _firestore.collection('users').doc(userId).get();
+      if (doc.exists) {
+        final data = doc.data();
+        return data?['displayName'] ?? data?['email'] ?? 'Unknown Admin';
+      }
+      return 'Unknown Admin';
+    } catch (e) {
+      return 'Unknown Admin';
+    }
+  }
+
+
 }
