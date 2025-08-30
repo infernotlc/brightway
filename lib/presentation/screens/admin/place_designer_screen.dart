@@ -226,13 +226,13 @@ class _PlaceDesignerScreenState extends State<PlaceDesignerScreen>
 
           const SizedBox(height: 16),
 
-          // Instructions
-          Text(
-            'Tap cells to place items, long press to remove items',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Colors.grey.shade600,
-            ),
-          ),
+                     // Instructions
+           Text(
+             'Tap cells to place items, tap placed items to rotate them, long press to remove items',
+             style: Theme.of(context).textTheme.bodySmall?.copyWith(
+               color: Colors.grey.shade600,
+             ),
+           ),
         ],
       ),
     );
@@ -357,13 +357,38 @@ class _PlaceDesignerScreenState extends State<PlaceDesignerScreen>
 
   Widget _buildCellContent(GridCell cell) {
     if (cell.item != null) {
-      return Transform.rotate(
-        angle: cell.item!.rotation * 3.14159 / 180,
-        child: Icon(
-          cell.item!.icon,
-          color: Colors.white,
-          size: 24,
-        ),
+      return Stack(
+        children: [
+          // Rotated icon
+          Transform.rotate(
+            angle: cell.item!.rotation * 3.14159 / 180,
+            child: Icon(
+              cell.item!.icon,
+              color: Colors.white,
+              size: 24,
+            ),
+          ),
+          // Rotation indicator (small text showing degrees)
+          Positioned(
+            bottom: 2,
+            right: 2,
+            child: Container(
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.7),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                '${cell.item!.rotation}°',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 8,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
       );
     }
     return const SizedBox.shrink();
@@ -399,11 +424,22 @@ class _PlaceDesignerScreenState extends State<PlaceDesignerScreen>
   }
 
   void _handleCellTap(GridPosition position) {
-    if (_grid.isEmpty || _selectedItem == null) return;
+    if (_grid.isEmpty) return;
 
-    setState(() {
-      _grid[position.row][position.col].item = _selectedItem!.clone();
-    });
+    if (_selectedItem != null) {
+      // Place new item
+      setState(() {
+        _grid[position.row][position.col].item = _selectedItem!.clone();
+        _selectedItem = null; // Clear selection after placing item
+      });
+    } else if (_grid[position.row][position.col].item != null) {
+      // Rotate existing item by 90 degrees
+      setState(() {
+        final currentItem = _grid[position.row][position.col].item!;
+        final newRotation = (currentItem.rotation + 90) % 360;
+        _grid[position.row][position.col].item = currentItem.clone(rotation: newRotation);
+      });
+    }
   }
 
   void _handleCellLongPress(GridPosition position) {
