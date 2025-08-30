@@ -587,12 +587,32 @@ class _PlaceDesignerScreenState extends State<PlaceDesignerScreen>
       return;
     }
 
-    // Check for duplicate design name
+    // Check for duplicate design name - when saving as new, always require unique name
     final designName = _designNameController.text.trim();
     print('Saving as new design with name: "$designName"');
     print('Current design ID: $_currentDesignId');
     print('Available designs: ${_userDesigns.map((d) => d.name).toList()}');
     
+    // For "Save as New", we need to check if the name is different from current design
+    if (_currentDesignId != null) {
+      final currentDesign = _userDesigns.firstWhere(
+        (design) => design.id == _currentDesignId,
+        orElse: () => throw Exception('Current design not found'),
+      );
+      
+      // If trying to save as new with the same name, prevent it
+      if (currentDesign.name.toLowerCase() == designName.toLowerCase()) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('To save as new, please use a different name than the current design.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+    }
+    
+    // Check for duplicates with other designs
     if (_isDesignNameDuplicate(designName)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -797,11 +817,24 @@ class _PlaceDesignerScreenState extends State<PlaceDesignerScreen>
     if (_currentDesignId != null) {
       // When updating, exclude current design from duplicate check
       // This allows updating with the same name
+      final currentDesign = _userDesigns.firstWhere(
+        (design) => design.id == _currentDesignId,
+        orElse: () => throw Exception('Current design not found'),
+      );
+      print('Current design name: "${currentDesign.name}" (${currentDesign.id})');
+      
+      // If the name is exactly the same as current design, allow it
+      if (currentDesign.name.toLowerCase() == trimmedName) {
+        print('Update mode - Same name as current design, allowing update');
+        return false;
+      }
+      
+      // Check for duplicates with other designs
       final hasDuplicate = _userDesigns.any((design) => 
         design.name.toLowerCase() == trimmedName && 
         design.id != _currentDesignId
       );
-      print('Update mode - Has duplicate: $hasDuplicate');
+      print('Update mode - Has duplicate with other designs: $hasDuplicate');
       return hasDuplicate;
     } else {
       // When creating new, NEVER allow duplicate names
