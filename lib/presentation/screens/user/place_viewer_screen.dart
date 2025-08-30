@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import '../../../core/models/grid_models.dart';
 import '../../../core/services/design_service.dart';
 
@@ -13,11 +14,90 @@ class PlaceViewerScreen extends StatefulWidget {
 
 class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
   String _adminName = 'Loading...';
+  DesignItem? _startPoint;
+  DesignItem? _endPoint;
+  List<GridPosition> _shortestPath = [];
+  bool _isCalculatingPath = false;
+  bool _isTTSAvailable = false;
+  FlutterTts flutterTts = FlutterTts();
 
   @override
   void initState() {
     super.initState();
     _loadAdminName();
+    // Delay TTS initialization to ensure plugin is ready
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeTTS();
+    });
+  }
+
+  void _initializeTTS() async {
+    try {
+      // Wait a bit for the plugin to be ready
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      // Check if TTS is supported on this device
+      try {
+        final engines = await flutterTts.getEngines;
+        print('Available TTS engines: $engines');
+        
+        if (engines.isEmpty) {
+          print('No TTS engines available on this device');
+          setState(() {
+            _isTTSAvailable = false;
+          });
+          return;
+        }
+      } catch (e) {
+        print('Could not get TTS engines: $e');
+      }
+      
+      // Try to get available languages first
+      try {
+        final languages = await flutterTts.getLanguages;
+        print('Available languages: $languages');
+      } catch (e) {
+        print('Could not get languages: $e');
+      }
+      
+      // Check if TTS is available
+      final available = await flutterTts.isLanguageAvailable("en-US");
+      print('English US available: $available');
+      
+      if (available == true) {
+        await flutterTts.setLanguage("en-US");
+        await flutterTts.setSpeechRate(0.5);
+        await flutterTts.setVolume(1.0);
+        await flutterTts.setPitch(1.0);
+        
+        // Test TTS with a simple sound
+        try {
+          await flutterTts.speak("Test");
+          await Future.delayed(const Duration(milliseconds: 100));
+          await flutterTts.stop();
+          
+          setState(() {
+            _isTTSAvailable = true;
+          });
+          print('TTS initialized successfully');
+        } catch (e) {
+          print('TTS test failed: $e');
+          setState(() {
+            _isTTSAvailable = false;
+          });
+        }
+      } else {
+        print('TTS language not available');
+        setState(() {
+          _isTTSAvailable = false;
+        });
+      }
+    } catch (e) {
+      print('TTS initialization error: $e');
+      setState(() {
+        _isTTSAvailable = false;
+      });
+    }
   }
 
   void _loadAdminName() async {
@@ -43,215 +123,250 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Place Header
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Theme.of(context).primaryColor,
-                    Theme.of(context).primaryColor.withOpacity(0.8),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          Icons.place,
-                          color: Colors.white,
-                          size: 32,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              widget.design.name,
-                              style: Theme.of(context).textTheme.headlineSmall
-                                  ?.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                            ),
-                            Text(
-                              widget.design.description,
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(
-                                    color: Colors.white.withOpacity(0.9),
-                                  ),
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.person,
-                                  size: 16,
-                                  color: Colors.white.withOpacity(0.8),
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'Created by: $_adminName',
-                                  style: Theme.of(context).textTheme.bodySmall
-                                      ?.copyWith(
-                                        color: Colors.white.withOpacity(0.8),
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+            _buildPlaceHeader(),
             const SizedBox(height: 24),
 
-            // Place Information
-            _buildInfoSection(context),
+            // Navigation Section
+            _buildNavigationSection(),
             const SizedBox(height: 24),
 
-            // Grid Preview
-            _buildGridPreview(context),
-            const SizedBox(height: 24),
-
-            // Items List
-            _buildItemsList(context),
+            // Path Display
+            if (_shortestPath.isNotEmpty) _buildPathDisplay(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildInfoSection(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Design Information',
-          style: Theme.of(
-            context,
-          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _buildInfoCard(
-                icon: Icons.grid_on,
-                title: 'Grid Size',
-                value: '${widget.design.rows} × ${widget.design.cols}',
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: _buildInfoCard(
-                icon: Icons.abc,
-                title: 'Total Items',
-                value: '${widget.design.items.length}',
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _buildInfoCard(
-                icon: Icons.calendar_today,
-                title: 'Created',
-                value: _formatDate(widget.design.createdAt),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: _buildInfoCard(
-                icon: Icons.update,
-                title: 'Last Updated',
-                value: _formatDate(widget.design.updatedAt),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _buildInfoCard(
-                icon: Icons.person,
-                title: 'Created By',
-                value: _adminName,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Container(), // Empty container for spacing
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildInfoCard({
-    required IconData icon,
-    required String title,
-    required String value,
-  }) {
+  Widget _buildPlaceHeader() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
+        gradient: LinearGradient(
+          colors: [
+            Theme.of(context).primaryColor,
+            Theme.of(context).primaryColor.withOpacity(0.8),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: Colors.grey[600], size: 24),
-          const SizedBox(height: 8),
-          Text(
-            title,
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.place,
+                  color: Colors.white,
+                  size: 32,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.design.name,
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      widget.design.description,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.white.withOpacity(0.9),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.person,
+                          size: 16,
+                          color: Colors.white.withOpacity(0.8),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Created by: $_adminName',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.white.withOpacity(0.8),
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildGridPreview(BuildContext context) {
+  Widget _buildNavigationSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Design Preview',
-          style: Theme.of(
-            context,
-          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+          'Navigation',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
         ),
         const SizedBox(height: 16),
+
+        // Start Point Selection
+        _buildPointSelector(
+          title: 'Start Point',
+          selectedItem: _startPoint,
+          onTap: () => _showItemSelectionDialog(true),
+          icon: Icons.play_arrow,
+          color: Colors.green,
+        ),
+        const SizedBox(height: 16),
+
+        // End Point Selection
+        _buildPointSelector(
+          title: 'End Point',
+          selectedItem: _endPoint,
+          onTap: () => _showItemSelectionDialog(false),
+          icon: Icons.flag,
+          color: Colors.red,
+        ),
+        const SizedBox(height: 24),
+
+        // Go Button
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: (_startPoint != null && _endPoint != null && !_isCalculatingPath)
+                ? _calculateAndNavigate
+                : null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).primaryColor,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            icon: _isCalculatingPath
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : const Icon(Icons.directions),
+            label: Text(
+              _isCalculatingPath ? 'Calculating...' : 'Go!',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPointSelector({
+    required String title,
+    required DesignItem? selectedItem,
+    required VoidCallback onTap,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: selectedItem != null ? color.withOpacity(0.1) : Colors.grey[100],
+              border: Border.all(
+                color: selectedItem != null ? color : Colors.grey[300]!,
+                width: 2,
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  icon,
+                  color: selectedItem != null ? color : Colors.grey[600],
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        selectedItem?.name ?? 'Select $title',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: selectedItem != null ? color : Colors.grey[600],
+                        ),
+                      ),
+                      if (selectedItem != null)
+                        Text(
+                          'Position: (${selectedItem.row + 1}, ${selectedItem.col + 1})',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_forward_ios,
+                  color: Colors.grey[400],
+                  size: 16,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPathDisplay() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Navigation Path',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Grid with path visualization
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -261,7 +376,6 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
           ),
           child: Column(
             children: [
-              // Grid visualization
               Container(
                 constraints: BoxConstraints(
                   maxWidth: MediaQuery.of(context).size.width * 0.8,
@@ -280,30 +394,125 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
                   itemBuilder: (context, index) {
                     final row = index ~/ widget.design.cols;
                     final col = index % widget.design.cols;
-                    final item = widget.design.items.firstWhere(
-                      (item) => item.row == row && item.col == col,
-                      orElse: () => DesignItem(
-                        name: '',
-                        type: GridItemType.wall,
-                        icon: Icons.square,
-                        color: Colors.transparent,
-                        row: row,
-                        col: col,
-                      ),
-                    );
-
-                    return _buildGridCell(item);
+                    final position = GridPosition(row, col);
+                    
+                    return _buildPathGridCell(position);
                   },
                 ),
               ),
               const SizedBox(height: 16),
+              
+                             // Path instructions
+               Container(
+                 padding: const EdgeInsets.all(12),
+                 decoration: BoxDecoration(
+                   color: Colors.blue[50],
+                   borderRadius: BorderRadius.circular(8),
+                   border: Border.all(color: Colors.blue[200]!),
+                 ),
+                 child: Column(
+                   crossAxisAlignment: CrossAxisAlignment.start,
+                   children: [
+                     Row(
+                       children: [
+                         Icon(Icons.info, color: Colors.blue[700], size: 20),
+                         const SizedBox(width: 8),
+                         Text(
+                           'Navigation Instructions',
+                           style: TextStyle(
+                             fontWeight: FontWeight.bold,
+                             color: Colors.blue[700],
+                           ),
+                         ),
+                       ],
+                     ),
+                     const SizedBox(height: 8),
+                     Text(
+                       'Total steps: ${_shortestPath.length}',
+                       style: TextStyle(color: Colors.blue[600]),
+                     ),
+                     const SizedBox(height: 8),
+                     // Step-by-step instructions
+                     if (_shortestPath.isNotEmpty) ...[
+                       Container(
+                         padding: const EdgeInsets.all(8),
+                         decoration: BoxDecoration(
+                           color: Colors.white,
+                           borderRadius: BorderRadius.circular(6),
+                           border: Border.all(color: Colors.blue[300]!),
+                         ),
+                         child: Column(
+                           crossAxisAlignment: CrossAxisAlignment.start,
+                           children: [
                              Text(
-                 'This is a preview of the design layout. Each cell represents a grid position.',
-                 style: Theme.of(
-                   context,
-                 ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
-                 textAlign: TextAlign.center,
+                               'Step-by-step directions:',
+                               style: TextStyle(
+                                 fontWeight: FontWeight.bold,
+                                 color: Colors.blue[700],
+                                 fontSize: 12,
+                               ),
+                             ),
+                             const SizedBox(height: 4),
+                             ..._generateDetailedStepInstructions().map((instruction) => 
+                               Padding(
+                                 padding: const EdgeInsets.only(bottom: 2),
+                                 child: Text(
+                                   instruction,
+                                   style: TextStyle(
+                                     color: Colors.blue[600],
+                                     fontSize: 11,
+                                   ),
+                                 ),
+                               ),
+                             ),
+                           ],
+                         ),
+                       ),
+                       const SizedBox(height: 8),
+                     ],
+                     Text(
+                       _isTTSAvailable 
+                         ? 'Tap the speaker button to hear navigation instructions'
+                         : 'TTS not available. Tap the button below to show instructions.',
+                       style: TextStyle(
+                         color: Colors.blue[600],
+                         fontSize: 12,
+                         fontStyle: FontStyle.italic,
+                       ),
+                     ),
+                     if (!_isTTSAvailable) ...[
+                       const SizedBox(height: 8),
+                       TextButton.icon(
+                         onPressed: _retryTTSInitialization,
+                         icon: const Icon(Icons.refresh, size: 16),
+                         label: const Text('Retry TTS'),
+                         style: TextButton.styleFrom(
+                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                         ),
+                       ),
+                     ],
+                   ],
+                 ),
                ),
+              
+              const SizedBox(height: 16),
+              
+              // Speak button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _speakNavigationInstructions,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _isTTSAvailable ? Colors.orange : Colors.grey,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  icon: Icon(_isTTSAvailable ? Icons.volume_up : Icons.info),
+                  label: Text(_isTTSAvailable 
+                    ? 'Speak Navigation Instructions' 
+                    : 'Show Navigation Instructions'),
+                ),
+              ),
             ],
           ),
         ),
@@ -311,140 +520,697 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
     );
   }
 
-  Widget _buildGridCell(DesignItem item) {
-    if (item.name.isEmpty) {
-      // Empty cell
-      return Container(
-        decoration: BoxDecoration(
-          color: Colors.grey[200],
-          border: Border.all(color: Colors.grey[300]!),
-        ),
-      );
+  Widget _buildPathGridCell(GridPosition position) {
+    final isStart = _startPoint != null && 
+                   position.row == _startPoint!.row && 
+                   position.col == _startPoint!.col;
+    final isEnd = _endPoint != null && 
+                 position.row == _endPoint!.row && 
+                 position.col == _endPoint!.col;
+    final isPath = _shortestPath.any((pathPos) => 
+                   pathPos.row == position.row && pathPos.col == position.col);
+    
+    // Find item at this position
+    final item = widget.design.items.firstWhere(
+      (item) => item.row == position.row && item.col == position.col,
+      orElse: () => DesignItem(
+        name: '',
+        type: GridItemType.wall,
+        icon: Icons.square,
+        color: Colors.transparent,
+        row: position.row,
+        col: position.col,
+      ),
+    );
+
+    Color cellColor;
+    IconData cellIcon;
+    Color iconColor;
+
+    if (isStart) {
+      cellColor = Colors.green;
+      cellIcon = Icons.play_arrow;
+      iconColor = Colors.white;
+    } else if (isEnd) {
+      cellColor = Colors.red;
+      cellIcon = Icons.flag;
+      iconColor = Colors.white;
+    } else if (isPath) {
+      cellColor = Colors.blue;
+      cellIcon = Icons.arrow_forward;
+      iconColor = Colors.white;
+    } else if (item.name.isNotEmpty) {
+      cellColor = item.color.withOpacity(0.8);
+      cellIcon = item.icon;
+      iconColor = Colors.white;
+    } else {
+      cellColor = Colors.grey[200]!;
+      cellIcon = Icons.square;
+      iconColor = Colors.grey[400]!;
     }
 
-    // Cell with item
     return Container(
       decoration: BoxDecoration(
-        color: item.color.withOpacity(0.8),
-        border: Border.all(color: item.color),
+        color: cellColor,
+        border: Border.all(
+          color: isPath ? Colors.blue : Colors.grey[300]!,
+          width: isPath ? 2 : 1,
+        ),
       ),
-      child: Transform.rotate(
-        angle: item.rotation * 3.14159 / 180,
-        child: Icon(item.icon, color: Colors.white, size: 16),
+      child: Icon(
+        cellIcon,
+        color: iconColor,
+        size: 16,
       ),
     );
   }
 
-  Widget _buildItemsList(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Items in this Design',
-          style: Theme.of(
-            context,
-          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 16),
-        if (widget.design.items.isEmpty)
-          Container(
-            padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(
-              color: Colors.grey[50],
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey[200]!),
-            ),
-            child: Center(
-              child: Column(
-                children: [
-                  Icon(Icons.inbox_outlined, size: 48, color: Colors.grey[400]),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No items placed',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.titleMedium?.copyWith(color: Colors.grey[600]),
-                  ),
-                  const SizedBox(height: 8),
-                                     Text(
-                     'This design doesn\'t have any furniture or items yet.',
-                     style: Theme.of(
-                       context,
-                     ).textTheme.bodyMedium?.copyWith(color: Colors.grey[500]),
-                     textAlign: TextAlign.center,
-                   ),
-                ],
-              ),
-            ),
-          )
-        else
-          ListView.builder(
+  void _showItemSelectionDialog(bool isStart) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Select ${isStart ? 'Start' : 'End'} Point'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
             shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
             itemCount: widget.design.items.length,
             itemBuilder: (context, index) {
               final item = widget.design.items[index];
-              return _buildItemCard(item);
+              return ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: item.color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    item.icon,
+                    color: item.color,
+                    size: 24,
+                  ),
+                ),
+                title: Text(item.name),
+                subtitle: Text('Position: (${item.row + 1}, ${item.col + 1})'),
+                onTap: () {
+                  Navigator.pop(context);
+                  setState(() {
+                    if (isStart) {
+                      _startPoint = item;
+                    } else {
+                      _endPoint = item;
+                    }
+                    _shortestPath = []; // Clear previous path
+                  });
+                },
+              );
             },
           ),
-      ],
-    );
-  }
-
-  Widget _buildItemCard(DesignItem item) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: item.color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Transform.rotate(
-            angle: item.rotation * 3.14159 / 180,
-            child: Icon(item.icon, color: item.color, size: 24),
-          ),
         ),
-        title: Text(
-          item.name,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Text('Position: (${item.row + 1}, ${item.col + 1})'),
-        trailing: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: Colors.grey[100],
-            borderRadius: BorderRadius.circular(12),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
           ),
-          child: Text(
-            '${item.rotation.toInt()}°',
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
+        ],
       ),
     );
   }
 
-  String _formatDate(DateTime date) {
-    final months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
+  void _calculateAndNavigate() async {
+    if (_startPoint == null || _endPoint == null) return;
+
+    setState(() {
+      _isCalculatingPath = true;
+    });
+
+    try {
+      print('Calculating path from ${_startPoint!.name} (${_startPoint!.row}, ${_startPoint!.col}) to ${_endPoint!.name} (${_endPoint!.row}, ${_endPoint!.col})');
+      
+      // Calculate shortest path using A* algorithm
+      final path = _calculateShortestPath(_startPoint!, _endPoint!);
+      
+      print('Path calculated: ${path.length} steps');
+      if (path.isNotEmpty) {
+        print('Path: ${path.map((p) => '(${p.row}, ${p.col})').join(' -> ')}');
+      }
+      
+      setState(() {
+        _shortestPath = path;
+        _isCalculatingPath = false;
+      });
+
+      // Try to speak initial navigation instruction, but don't fail if TTS is not available
+      try {
+        await _speakNavigationInstructions();
+      } catch (e) {
+        print('Initial TTS failed: $e');
+        // Show instructions in UI instead
+        if (mounted) {
+          final instructions = _generateNavigationInstructions();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(instructions),
+              backgroundColor: Colors.blue,
+              duration: const Duration(seconds: 5),
+            ),
+          );
+        }
+      }
+      
+    } catch (e) {
+      setState(() {
+        _isCalculatingPath = false;
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error calculating path: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  List<GridPosition> _calculateShortestPath(DesignItem start, DesignItem end) {
+    // Enhanced A* pathfinding algorithm with better debugging
+    final openSet = <GridPosition>{};
+    final closedSet = <GridPosition>{};
+    final cameFrom = <GridPosition, GridPosition>{};
+    final gScore = <GridPosition, double>{};
+    final fScore = <GridPosition, double>{};
+    
+    final startPos = GridPosition(start.row, start.col);
+    final endPos = GridPosition(end.row, end.col);
+    
+    print('Starting A* algorithm from ($startPos) to ($endPos)');
+    print('Grid size: ${widget.design.rows}x${widget.design.cols}');
+    _debugPrintGrid();
+    
+    // Check if start and end are the same
+    if (startPos.row == endPos.row && startPos.col == endPos.col) {
+      print('Start and end are the same position');
+      return [startPos];
+    }
+    
+         // Check if end position is walkable
+     final endItem = widget.design.items.firstWhere(
+       (item) => item.row == endPos.row && item.col == endPos.col,
+       orElse: () => DesignItem(
+         name: '',
+         type: GridItemType.door,
+         icon: Icons.square,
+         color: Colors.transparent,
+         row: endPos.row,
+         col: endPos.col,
+       ),
+     );
+     
+     // If the end position has an item that blocks movement, find a nearby walkable position
+     if (endItem.name.isNotEmpty && !_isWalkable(endItem.type)) {
+       print('End position is blocked by ${endItem.name} (${endItem.type}) - finding nearby walkable position');
+       final nearbyWalkable = _findNearbyWalkablePosition(endPos);
+       if (nearbyWalkable != null) {
+         print('Found nearby walkable position: $nearbyWalkable');
+         final pathToNearby = _calculateShortestPath(start, DesignItem(
+           name: 'Nearby',
+           type: GridItemType.door,
+           icon: Icons.square,
+           color: Colors.transparent,
+           row: nearbyWalkable.row,
+           col: nearbyWalkable.col,
+         ));
+         if (pathToNearby.isNotEmpty) {
+           pathToNearby.add(endPos);
+           return pathToNearby;
+         }
+       }
+     }
+    
+    openSet.add(startPos);
+    gScore[startPos] = 0;
+    fScore[startPos] = _heuristic(startPos, endPos);
+    
+    int iterations = 0;
+    while (openSet.isNotEmpty) {
+      iterations++;
+      if (iterations > 2000) { // Increased limit for complex grids
+        print('Pathfinding exceeded 2000 iterations, stopping');
+        break;
+      }
+      
+      // Find position with lowest fScore
+      GridPosition current = openSet.reduce((a, b) => 
+        fScore[a]! < fScore[b]! ? a : b);
+      
+      if (current.row == endPos.row && current.col == endPos.col) {
+        // Path found, reconstruct it
+        print('Path found after $iterations iterations');
+        return _reconstructPath(cameFrom, current);
+      }
+      
+      openSet.remove(current);
+      closedSet.add(current);
+      
+      // Check all neighbors
+      final neighbors = _getNeighbors(current);
+      print('Position ($current) has ${neighbors.length} neighbors: ${neighbors.map((n) => '(${n.row}, ${n.col})').join(', ')}');
+      
+      for (final neighbor in neighbors) {
+        if (closedSet.contains(neighbor)) continue;
+        
+        final tentativeGScore = gScore[current]! + 1; // Cost to move to neighbor
+        
+        if (!openSet.contains(neighbor)) {
+          openSet.add(neighbor);
+        } else if (tentativeGScore >= (gScore[neighbor] ?? double.infinity)) {
+          continue;
+        }
+        
+        cameFrom[neighbor] = current;
+        gScore[neighbor] = tentativeGScore;
+        fScore[neighbor] = gScore[neighbor]! + _heuristic(neighbor, endPos);
+      }
+      
+      // Debug: Show current state every 100 iterations
+      if (iterations % 100 == 0) {
+        print('Iteration $iterations: openSet=${openSet.length}, closedSet=${closedSet.length}');
+      }
+    }
+    
+    print('No path found after $iterations iterations');
+    print('Open set size: ${openSet.length}');
+    print('Closed set size: ${closedSet.length}');
+    
+    // Try to find any path to get closer to the target
+    if (closedSet.isNotEmpty) {
+      print('Attempting to find partial path...');
+      final closestPosition = closedSet.reduce((a, b) => 
+        _heuristic(a, endPos) < _heuristic(b, endPos) ? a : b);
+      print('Closest position reached: $closestPosition (distance: ${_heuristic(closestPosition, endPos)})');
+      
+      final partialPath = _reconstructPath(cameFrom, closestPosition);
+      print('Partial path found: ${partialPath.length} steps');
+      return partialPath;
+    }
+    
+    return [];
+  }
+
+  List<GridPosition> _getNeighbors(GridPosition pos) {
+    final neighbors = <GridPosition>[];
+    final directions = [
+      [-1, 0], [1, 0], [0, -1], [0, 1], // Up, Down, Left, Right
     ];
-    return '${months[date.month - 1]} ${date.day}, ${date.year}';
+    
+    for (final dir in directions) {
+      final newRow = pos.row + dir[0];
+      final newCol = pos.col + dir[1];
+      
+      if (newRow >= 0 && newRow < widget.design.rows &&
+          newCol >= 0 && newCol < widget.design.cols) {
+        // Check if the neighbor position is occupied by any obstacle
+        final blockingItem = widget.design.items.firstWhere(
+          (item) => item.row == newRow && item.col == newCol,
+          orElse: () => DesignItem(
+            name: '',
+            type: GridItemType.door,
+            icon: Icons.square,
+            color: Colors.transparent,
+            row: newRow,
+            col: newCol,
+          ),
+        );
+        
+        if (blockingItem.name.isNotEmpty) {
+          // There's an item at this position
+          if (_isWalkable(blockingItem.type)) {
+            neighbors.add(GridPosition(newRow, newCol));
+            print('Position ($newRow, $newCol) is walkable (${blockingItem.type})');
+          } else {
+            print('Position ($newRow, $newCol) is blocked by ${blockingItem.name} (${blockingItem.type})');
+          }
+        } else {
+          // Empty space - always walkable
+          neighbors.add(GridPosition(newRow, newCol));
+          print('Position ($newRow, $newCol) is empty space');
+        }
+      }
+    }
+    
+    print('Neighbors for position ($pos): ${neighbors.map((n) => '(${n.row}, ${n.col})').join(', ')}');
+    return neighbors;
+  }
+
+  bool _isWalkable(GridItemType type) {
+    // Define which item types allow movement THROUGH them (not destinations)
+    // This is about pathfinding - can you walk through this position?
+    switch (type) {
+      case GridItemType.door:
+        // Doors are walkable (can pass through)
+        return true;
+      case GridItemType.exitDoor:
+        // Exit doors are walkable
+        return true;
+      case GridItemType.toilet:
+        // Toilets block movement (but can be destinations)
+        return false;
+      case GridItemType.chair:
+        // Chairs block movement (but can be destinations)
+        return false;
+      case GridItemType.table:
+        // Tables block movement (but can be destinations)
+        return false;
+      case GridItemType.wall:
+        // Walls block movement (but can be destinations)
+        return false;
+      case GridItemType.obstacle:
+        // Obstacles block movement (but can be destinations)
+        return false;
+    }
+  }
+
+  GridPosition? _findNearbyWalkablePosition(GridPosition target) {
+    // Search in expanding circles around the target for walkable positions
+    final maxRadius = 3; // Search up to 3 cells away
+    
+    for (int radius = 1; radius <= maxRadius; radius++) {
+      for (int row = target.row - radius; row <= target.row + radius; row++) {
+        for (int col = target.col - radius; col <= target.col + radius; col++) {
+          // Only check positions at exactly this radius
+          if ((row - target.row).abs() + (col - target.col).abs() == radius) {
+            if (row >= 0 && row < widget.design.rows &&
+                col >= 0 && col < widget.design.cols) {
+              
+              // Check if this position is walkable
+              final item = widget.design.items.firstWhere(
+                (item) => item.row == row && item.col == col,
+                orElse: () => DesignItem(
+                  name: '',
+                  type: GridItemType.door,
+                  icon: Icons.square,
+                  color: Colors.transparent,
+                  row: row,
+                  col: col,
+                ),
+              );
+              
+              if (item.name.isEmpty || _isWalkable(item.type)) {
+                print('Found nearby walkable position at ($row, $col)');
+                return GridPosition(row, col);
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    print('No nearby walkable position found within radius $maxRadius');
+    return null;
+  }
+
+  void _debugPrintGrid() {
+    print('\n=== GRID LAYOUT DEBUG ===');
+    print('Legend: [D] = Walkable (doors), [X] = Obstacle (blocks movement), [ ] = Empty space');
+    print('Note: All items can be destinations, but only doors allow movement through them');
+    for (int row = 0; row < widget.design.rows; row++) {
+      String rowStr = '';
+      for (int col = 0; col < widget.design.cols; col++) {
+        final item = widget.design.items.firstWhere(
+          (item) => item.row == row && item.col == col,
+          orElse: () => DesignItem(
+            name: '',
+            type: GridItemType.door,
+            icon: Icons.square,
+            color: Colors.transparent,
+            row: row,
+            col: col,
+          ),
+        );
+        
+        if (item.name.isNotEmpty) {
+          if (_isWalkable(item.type)) {
+            rowStr += '[D]'; // Door/Walkable
+          } else {
+            rowStr += '[X]'; // Obstacle
+          }
+        } else {
+          rowStr += '[ ]'; // Empty space
+        }
+      }
+      print('Row $row: $rowStr');
+    }
+    print('=== END GRID DEBUG ===\n');
+  }
+
+  double _heuristic(GridPosition a, GridPosition b) {
+    // Manhattan distance
+    return (a.row - b.row).abs() + (a.col - b.col).abs().toDouble();
+  }
+
+  List<GridPosition> _reconstructPath(
+    Map<GridPosition, GridPosition> cameFrom, 
+    GridPosition current
+  ) {
+    final path = <GridPosition>[current];
+    
+    while (cameFrom.containsKey(current)) {
+      current = cameFrom[current]!;
+      path.insert(0, current);
+    }
+    
+    return path;
+  }
+
+  Future<void> _speakNavigationInstructions() async {
+    if (_shortestPath.isEmpty) return;
+
+    final instructions = _generateTTSInstructions();
+    
+    // If TTS is not available, just show the instructions
+    if (!_isTTSAvailable) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(instructions),
+            backgroundColor: Colors.blue,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+      return;
+    }
+    
+    try {
+      await flutterTts.speak(instructions);
+    } catch (e) {
+      print('TTS Error: $e');
+      // Fallback to showing instructions in a snackbar
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(instructions),
+            backgroundColor: Colors.blue,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    }
+  }
+
+  String _generateNavigationInstructions() {
+    if (_startPoint == null || _endPoint == null || _shortestPath.isEmpty) {
+      return 'No path available';
+    }
+
+    final startName = _startPoint!.name;
+    final endName = _endPoint!.name;
+    final steps = _shortestPath.length - 1; // Exclude start position
+    
+    if (steps == 0) {
+      return 'You are already at $endName';
+    }
+
+    // Generate step-by-step directional instructions
+    final directions = _generateStepByStepDirections();
+    
+    String instruction = 'Navigate from $startName to $endName. ';
+    instruction += 'Total distance: $steps steps. ';
+    instruction += directions;
+    
+    return instruction;
+  }
+
+  String _generateStepByStepDirections() {
+    if (_shortestPath.length < 2) return '';
+    
+    final directions = <String>[];
+    String currentDirection = _getInitialDirection();
+    
+    // First instruction
+    directions.add('Start facing $currentDirection. ');
+    
+    // Process each step
+    for (int i = 1; i < _shortestPath.length; i++) {
+      final prevPos = _shortestPath[i - 1];
+      final currentPos = _shortestPath[i];
+      final nextPos = i < _shortestPath.length - 1 ? _shortestPath[i + 1] : null;
+      
+      final stepDirection = _getStepDirection(prevPos, currentPos);
+      final turnInstruction = _getTurnInstruction(currentDirection, stepDirection);
+      
+      if (turnInstruction.isNotEmpty) {
+        directions.add(turnInstruction);
+        currentDirection = stepDirection;
+      }
+      
+      // Add step instruction
+      if (nextPos != null) {
+        directions.add('Take 1 step forward. ');
+      } else {
+        directions.add('Take 1 step forward to reach ${_endPoint!.name}. ');
+      }
+    }
+    
+    return directions.join('');
+  }
+
+  String _generateTTSInstructions() {
+    if (_startPoint == null || _endPoint == null || _shortestPath.isEmpty) {
+      return 'No path available';
+    }
+
+    final startName = _startPoint!.name;
+    final endName = _endPoint!.name;
+    final steps = _shortestPath.length - 1;
+    
+    if (steps == 0) {
+      return 'You are already at $endName';
+    }
+
+    // Generate TTS-friendly instructions
+    final directions = <String>[];
+    String currentDirection = _getInitialDirection();
+    
+    directions.add('Starting from $startName, face $currentDirection. ');
+    
+    for (int i = 1; i < _shortestPath.length; i++) {
+      final prevPos = _shortestPath[i - 1];
+      final currentPos = _shortestPath[i];
+      final nextPos = i < _shortestPath.length - 1 ? _shortestPath[i + 1] : null;
+      
+      final stepDirection = _getStepDirection(prevPos, currentPos);
+      final turnInstruction = _getTurnInstruction(currentDirection, stepDirection);
+      
+      if (turnInstruction.isNotEmpty) {
+        directions.add(turnInstruction);
+        currentDirection = stepDirection;
+      }
+      
+      if (nextPos != null) {
+        directions.add('Walk forward one step. ');
+      } else {
+        directions.add('Walk forward one step to reach $endName. ');
+      }
+    }
+    
+    directions.add('You have arrived at $endName. ');
+    
+    return directions.join('');
+  }
+
+  String _getInitialDirection() {
+    // Determine initial direction based on first step
+    if (_shortestPath.length < 2) return 'north';
+    
+    final startPos = _shortestPath[0];
+    final firstStep = _shortestPath[1];
+    
+    if (firstStep.row < startPos.row) return 'north';
+    if (firstStep.row > startPos.row) return 'south';
+    if (firstStep.col < startPos.col) return 'west';
+    if (firstStep.col > startPos.col) return 'east';
+    
+    return 'north';
+  }
+
+  String _getStepDirection(GridPosition from, GridPosition to) {
+    if (to.row < from.row) return 'north';
+    if (to.row > from.row) return 'south';
+    if (to.col < from.col) return 'west';
+    if (to.col > from.col) return 'east';
+    return 'north';
+  }
+
+  String _getTurnInstruction(String currentDirection, String targetDirection) {
+    if (currentDirection == targetDirection) return '';
+    
+    final directions = ['north', 'east', 'south', 'west'];
+    final currentIndex = directions.indexOf(currentDirection);
+    final targetIndex = directions.indexOf(targetDirection);
+    
+    if (currentIndex == -1 || targetIndex == -1) return '';
+    
+    // Calculate turn direction
+    int turnAmount = (targetIndex - currentIndex) % 4;
+    if (turnAmount < 0) turnAmount += 4;
+    
+    if (turnAmount == 1) {
+      return 'Turn right. ';
+    } else if (turnAmount == 2) {
+      return 'Turn around. ';
+    } else if (turnAmount == 3) {
+      return 'Turn left. ';
+    }
+    
+    return '';
+  }
+
+  List<String> _generateDetailedStepInstructions() {
+    if (_shortestPath.length < 2) return [];
+    
+    final instructions = <String>[];
+    String currentDirection = _getInitialDirection();
+    
+    // First instruction
+    instructions.add('1. Start facing $currentDirection');
+    
+    // Process each step
+    for (int i = 1; i < _shortestPath.length; i++) {
+      final prevPos = _shortestPath[i - 1];
+      final currentPos = _shortestPath[i];
+      final nextPos = i < _shortestPath.length - 1 ? _shortestPath[i + 1] : null;
+      
+      final stepDirection = _getStepDirection(prevPos, currentPos);
+      final turnInstruction = _getTurnInstruction(currentDirection, stepDirection);
+      
+      if (turnInstruction.isNotEmpty) {
+        instructions.add('${i + 1}. ${turnInstruction.trim()}');
+        currentDirection = stepDirection;
+      }
+      
+      // Add step instruction
+      if (nextPos != null) {
+        instructions.add('${i + 1}. Take 1 step forward');
+      } else {
+        instructions.add('${i + 1}. Take 1 step forward to reach ${_endPoint!.name}');
+      }
+    }
+    
+    return instructions;
+  }
+
+  /// Retry TTS initialization if it failed initially
+  Future<void> _retryTTSInitialization() async {
+    setState(() {
+      _isTTSAvailable = false;
+    });
+    _initializeTTS(); // Remove await since _initializeTTS is void
+  }
+
+  @override
+  void dispose() {
+    flutterTts.stop();
+    super.dispose();
   }
 }
