@@ -1,4 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Permission for text-to-speech -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    
     <application
         android:label="brightway"
         android:name="${applicationName}"
