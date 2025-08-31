@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../core/models/grid_models.dart';
 import '../../../core/services/design_service.dart';
 
@@ -61,11 +62,11 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
       }
       
       // Check if TTS is available
-      final available = await flutterTts.isLanguageAvailable("en-US");
-      print('English US available: $available');
+      final available = await flutterTts.isLanguageAvailable("tr-TR");
+      print('Turkish TR available: $available');
       
       if (available == true) {
-        await flutterTts.setLanguage("en-US");
+        await flutterTts.setLanguage("tr-TR");
         await flutterTts.setSpeechRate(0.5);
         await flutterTts.setVolume(1.0);
         await flutterTts.setPitch(1.0);
@@ -79,7 +80,7 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
           setState(() {
             _isTTSAvailable = true;
           });
-          print('TTS initialized successfully');
+          print('TTS initialized successfully with Turkish language');
         } catch (e) {
           print('TTS test failed: $e');
           setState(() {
@@ -87,7 +88,7 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
           });
         }
       } else {
-        print('TTS language not available');
+        print('Turkish TTS language not available');
         setState(() {
           _isTTSAvailable = false;
         });
@@ -648,7 +649,7 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
       print('Calculating path from ${_startPoint!.name} (${_startPoint!.row}, ${_startPoint!.col}) to ${_endPoint!.name} (${_endPoint!.row}, ${_endPoint!.col})');
       
       // Calculate shortest path using A* algorithm
-      final path = _calculateShortestPath(_startPoint!, _endPoint!);
+      final path = _calculateOptimalPath(_startPoint!, _endPoint!);
       
       print('Path calculated: ${path.length} steps');
       if (path.isNotEmpty) {
@@ -703,8 +704,11 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
     final startPos = GridPosition(start.row, start.col);
     final endPos = GridPosition(end.row, end.col);
     
-    print('Starting A* algorithm from ($startPos) to ($endPos)');
-    print('Grid size: ${widget.design.rows}x${widget.design.cols}');
+    // Get localized text
+    final l10n = AppLocalizations.of(context)!;
+    
+    print(l10n.pathfindingStartingAlgorithm(startPos.toString(), endPos.toString()));
+    print(l10n.pathfindingGridSize(widget.design.rows, widget.design.cols));
     _debugPrintGrid();
     
     // Check if start and end are the same
@@ -765,7 +769,7 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
       
       if (current.row == endPos.row && current.col == endPos.col) {
         // Path found, reconstruct it
-        print('Path found after $iterations iterations');
+        print(l10n.pathfindingPathFound(iterations));
         return _reconstructPath(cameFrom, current);
       }
       
@@ -798,7 +802,7 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
       }
     }
     
-    print('No path found after $iterations iterations');
+    print(l10n.pathfindingNoPathFound(iterations));
     print('Open set size: ${openSet.length}');
     print('Closed set size: ${closedSet.length}');
     
@@ -817,8 +821,346 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
     return [];
   }
 
+  /// Try multiple pathfinding approaches to find the optimal path
+  List<GridPosition> _calculateOptimalPath(DesignItem start, DesignItem end) {
+    // Try the standard approach first
+    final standardPath = _calculateShortestPath(start, end);
+    
+    // If the path is longer than expected, try alternative approaches
+    if (standardPath.length > 6) { // Lowered threshold to catch suboptimal paths
+      print('Standard path is long (${standardPath.length} steps), trying alternative approaches...');
+      
+      // Try with different heuristic weights
+      final alternativePath = _calculatePathWithAlternativeHeuristic(start, end);
+      
+      // Try the direct pathfinding approach
+      final directPath = _calculateDirectPath(start, end);
+      
+      // Try the efficient pathfinding approach
+      final efficientPath = _calculateEfficientPath(start, end);
+      
+      // Try the intelligent pathfinding approach
+      final intelligentPath = _calculateIntelligentPath(start, end);
+      
+      // Find the shortest path among all options
+      List<GridPosition> shortestPath = standardPath;
+      int shortestLength = standardPath.length;
+      
+      if (alternativePath.isNotEmpty && alternativePath.length < shortestLength) {
+        shortestPath = alternativePath;
+        shortestLength = alternativePath.length;
+        print('Alternative path is shorter: ${alternativePath.length} steps');
+      }
+      
+      if (directPath.isNotEmpty && directPath.length < shortestLength) {
+        shortestPath = directPath;
+        shortestLength = directPath.length;
+        print('Direct path is shortest: ${directPath.length} steps');
+      }
+      
+      if (efficientPath.isNotEmpty && efficientPath.length < shortestLength) {
+        shortestPath = efficientPath;
+        shortestLength = efficientPath.length;
+        print('Efficient path is shortest: ${efficientPath.length} steps');
+      }
+
+      if (intelligentPath.isNotEmpty && intelligentPath.length < shortestLength) {
+        shortestPath = intelligentPath;
+        shortestLength = intelligentPath.length;
+        print('Intelligent path is shortest: ${intelligentPath.length} steps');
+      }
+      
+      if (shortestPath != standardPath) {
+        print('Found shorter path: ${shortestPath.length} steps vs ${standardPath.length} steps');
+        return shortestPath;
+      }
+    }
+    
+    return standardPath;
+  }
+
+  /// Calculate path using alternative heuristic approach
+  List<GridPosition> _calculatePathWithAlternativeHeuristic(DesignItem start, DesignItem end) {
+    final openSet = <GridPosition>{};
+    final closedSet = <GridPosition>{};
+    final cameFrom = <GridPosition, GridPosition>{};
+    final gScore = <GridPosition, double>{};
+    final fScore = <GridPosition, double>{};
+    
+    final startPos = GridPosition(start.row, start.col);
+    final endPos = GridPosition(end.row, end.col);
+    
+    if (startPos.row == endPos.row && startPos.col == endPos.col) {
+      return [startPos];
+    }
+    
+    openSet.add(startPos);
+    gScore[startPos] = 0;
+    fScore[startPos] = _alternativeHeuristic(startPos, endPos);
+    
+    int iterations = 0;
+    while (openSet.isNotEmpty && iterations < 1000) {
+      iterations++;
+      
+      final current = openSet.reduce((a, b) => 
+        fScore[a]! < fScore[b]! ? a : b);
+      
+      if (current.row == endPos.row && current.col == endPos.col) {
+        return _reconstructPath(cameFrom, current);
+      }
+      
+      openSet.remove(current);
+      closedSet.add(current);
+      
+      final neighbors = _getNeighbors(current);
+      
+      for (final neighbor in neighbors) {
+        if (closedSet.contains(neighbor)) continue;
+        
+        final tentativeGScore = gScore[current]! + 1;
+        
+        if (!openSet.contains(neighbor)) {
+          openSet.add(neighbor);
+        } else if (tentativeGScore >= (gScore[neighbor] ?? double.infinity)) {
+          continue;
+        }
+        
+        cameFrom[neighbor] = current;
+        gScore[neighbor] = tentativeGScore;
+        fScore[neighbor] = gScore[neighbor]! + _alternativeHeuristic(neighbor, endPos);
+      }
+    }
+    
+    return [];
+  }
+
+  /// Alternative heuristic that prioritizes horizontal movement
+  double _alternativeHeuristic(GridPosition a, GridPosition b) {
+    final dx = (a.row - b.row).abs();
+    final dy = (a.col - b.col).abs();
+    // Prioritize horizontal movement slightly to encourage straighter paths
+    return (dx * dx + dy * dy * 0.8).toDouble();
+  }
+
+  /// Calculate the most direct path by prioritizing straight-line movement
+  List<GridPosition> _calculateDirectPath(DesignItem start, DesignItem end) {
+    final openSet = <GridPosition>{};
+    final closedSet = <GridPosition>{};
+    final cameFrom = <GridPosition, GridPosition>{};
+    final gScore = <GridPosition, double>{};
+    final fScore = <GridPosition, double>{};
+    
+    final startPos = GridPosition(start.row, start.col);
+    final endPos = GridPosition(end.row, end.col);
+    
+    if (startPos.row == endPos.row && startPos.col == endPos.col) {
+      return [startPos];
+    }
+    
+    openSet.add(startPos);
+    gScore[startPos] = 0;
+    fScore[startPos] = _directHeuristic(startPos, endPos);
+    
+    int iterations = 0;
+    while (openSet.isNotEmpty && iterations < 1000) {
+      iterations++;
+      
+      final current = openSet.reduce((a, b) => 
+        fScore[a]! < fScore[b]! ? a : b);
+      
+      if (current.row == endPos.row && current.col == endPos.col) {
+        return _reconstructPath(cameFrom, current);
+      }
+      
+      openSet.remove(current);
+      closedSet.add(current);
+      
+      final neighbors = _getNeighbors(current);
+      
+      for (final neighbor in neighbors) {
+        if (closedSet.contains(neighbor)) continue;
+        
+        final tentativeGScore = gScore[current]! + 1;
+        
+        if (!openSet.contains(neighbor)) {
+          openSet.add(neighbor);
+        } else if (tentativeGScore >= (gScore[neighbor] ?? double.infinity)) {
+          continue;
+        }
+        
+        cameFrom[neighbor] = current;
+        gScore[neighbor] = tentativeGScore;
+        fScore[neighbor] = gScore[neighbor]! + _directHeuristic(neighbor, endPos);
+      }
+    }
+    
+    return [];
+  }
+
+  /// Calculate the most efficient path by prioritizing movement towards the target
+  List<GridPosition> _calculateEfficientPath(DesignItem start, DesignItem end) {
+    final openSet = <GridPosition>{};
+    final closedSet = <GridPosition>{};
+    final cameFrom = <GridPosition, GridPosition>{};
+    final gScore = <GridPosition, double>{};
+    final fScore = <GridPosition, double>{};
+    
+    final startPos = GridPosition(start.row, start.col);
+    final endPos = GridPosition(end.row, end.col);
+    
+    if (startPos.row == endPos.row && startPos.col == endPos.col) {
+      return [startPos];
+    }
+    
+    openSet.add(startPos);
+    gScore[startPos] = 0;
+    fScore[startPos] = _efficientHeuristic(startPos, endPos);
+    
+    int iterations = 0;
+    while (openSet.isNotEmpty && iterations < 1000) {
+      iterations++;
+      
+      final current = openSet.reduce((a, b) => 
+        fScore[a]! < fScore[b]! ? a : b);
+      
+      if (current.row == endPos.row && current.col == endPos.col) {
+        return _reconstructPath(cameFrom, current);
+      }
+      
+      openSet.remove(current);
+      closedSet.add(current);
+      
+      final neighbors = _getNeighbors(current);
+      
+      for (final neighbor in neighbors) {
+        if (closedSet.contains(neighbor)) continue;
+        
+        final tentativeGScore = gScore[current]! + 1;
+        
+        if (!openSet.contains(neighbor)) {
+          openSet.add(neighbor);
+        } else if (tentativeGScore >= (gScore[neighbor] ?? double.infinity)) {
+          continue;
+        }
+        
+        cameFrom[neighbor] = current;
+        gScore[neighbor] = tentativeGScore;
+        fScore[neighbor] = gScore[neighbor]! + _efficientHeuristic(neighbor, endPos);
+      }
+    }
+    
+    return [];
+  }
+
+  /// Intelligent pathfinding that finds the most direct route
+  /// This method specifically targets the shortest path problem
+  List<GridPosition> _calculateIntelligentPath(DesignItem start, DesignItem end) {
+    final startPos = GridPosition(start.row, start.col);
+    final endPos = GridPosition(end.row, end.col);
+    
+    if (startPos.row == endPos.row && startPos.col == endPos.col) {
+      return [startPos];
+    }
+    
+    // Try to find the most direct path by moving towards the target
+    final path = <GridPosition>[startPos];
+    var currentPos = startPos;
+    
+    // First, try to move horizontally towards the target
+    while (currentPos.col != endPos.col) {
+      final nextCol = currentPos.col < endPos.col ? currentPos.col + 1 : currentPos.col - 1;
+      final nextPos = GridPosition(currentPos.row, nextCol);
+      
+      // Check if this position is walkable
+      if (_isPositionWalkable(nextPos)) {
+        path.add(nextPos);
+        currentPos = nextPos;
+      } else {
+        // If horizontal movement is blocked, try vertical movement
+        break;
+      }
+    }
+    
+    // Then, try to move vertically towards the target
+    while (currentPos.row != endPos.row) {
+      final nextRow = currentPos.row < endPos.row ? currentPos.row + 1 : currentPos.row - 1;
+      final nextPos = GridPosition(nextRow, currentPos.col);
+      
+      // Check if this position is walkable
+      if (_isPositionWalkable(nextPos)) {
+        path.add(nextPos);
+        currentPos = nextPos;
+      } else {
+        // If vertical movement is blocked, we need to find an alternative route
+        break;
+      }
+    }
+    
+    // If we reached the target, return the path
+    if (currentPos.row == endPos.row && currentPos.col == endPos.col) {
+      return path;
+    }
+    
+    // If the direct path didn't work, fall back to A* algorithm
+    return _calculateShortestPath(start, end);
+  }
+
+  /// Check if a position is walkable
+  bool _isPositionWalkable(GridPosition pos) {
+    if (pos.row < 0 || pos.row >= widget.design.rows || 
+        pos.col < 0 || pos.col >= widget.design.cols) {
+      return false;
+    }
+    
+    // Check if there's an item at this position
+    final item = widget.design.items.firstWhere(
+      (item) => item.row == pos.row && item.col == pos.col,
+      orElse: () => DesignItem(
+        name: '',
+        type: GridItemType.door,
+        icon: Icons.square,
+        color: Colors.transparent,
+        row: pos.row,
+        col: pos.col,
+      ),
+    );
+    
+    // Position is walkable if it's empty or has a walkable item
+    return item.name.isEmpty || _isWalkable(item.type);
+  }
+
+  /// Efficient heuristic that strongly encourages movement towards the target
+  double _efficientHeuristic(GridPosition a, GridPosition b) {
+    final dx = (a.row - b.row).abs();
+    final dy = (a.col - b.col).abs();
+    
+    // Use a combination of Manhattan distance and directional bias
+    // This helps the algorithm prefer paths that move towards the target
+    final manhattan = dx + dy;
+    final directionalBias = (dx > dy) ? dx * 0.1 : dy * 0.1;
+    
+    return manhattan + directionalBias;
+  }
+
+  /// Heuristic that strongly encourages movement towards the target
+  double _directHeuristic(GridPosition a, GridPosition b) {
+    final dx = (a.row - b.row).abs();
+    final dy = (a.col - b.col).abs();
+    
+    // Strongly prioritize the direction that gets us closer to the target
+    // This encourages the algorithm to move directly towards the goal
+    if (dx > dy) {
+      // More horizontal distance, prioritize horizontal movement
+      return (dx * dx + dy * dy * 0.5).toDouble();
+    } else {
+      // More vertical distance, prioritize vertical movement
+      return (dx * dx * 0.5 + dy * dy).toDouble();
+    }
+  }
+
   List<GridPosition> _getNeighbors(GridPosition pos) {
     final neighbors = <GridPosition>[];
+    // Only cardinal directions for accessibility (no diagonal movement)
     final directions = [
       [-1, 0], [1, 0], [0, -1], [0, 1], // Up, Down, Left, Right
     ];
@@ -829,6 +1171,7 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
       
       if (newRow >= 0 && newRow < widget.design.rows &&
           newCol >= 0 && newCol < widget.design.cols) {
+        
         // Check if the neighbor position is occupied by any obstacle
         final blockingItem = widget.design.items.firstWhere(
           (item) => item.row == newRow && item.col == newCol,
@@ -930,9 +1273,12 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
   }
 
   void _debugPrintGrid() {
+    // Get localized text
+    final l10n = AppLocalizations.of(context)!;
+    
     print('\n=== GRID LAYOUT DEBUG ===');
-    print('Legend: [D] = Walkable (doors), [X] = Obstacle (blocks movement), [ ] = Empty space');
-    print('Note: All items can be destinations, but only doors allow movement through them');
+    print(l10n.gridLegend);
+    print(l10n.gridNote);
     for (int row = 0; row < widget.design.rows; row++) {
       String rowStr = '';
       for (int col = 0; col < widget.design.cols; col++) {
@@ -958,13 +1304,14 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
           rowStr += '[ ]'; // Empty space
         }
       }
-      print('Row $row: $rowStr');
+      print(l10n.gridRow(row));
+      print('$rowStr');
     }
     print('=== END GRID DEBUG ===\n');
   }
 
   double _heuristic(GridPosition a, GridPosition b) {
-    // Manhattan distance
+    // Manhattan distance is optimal for cardinal-only movement
     return (a.row - b.row).abs() + (a.col - b.col).abs().toDouble();
   }
 
@@ -1020,7 +1367,7 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
 
   String _generateNavigationInstructions() {
     if (_startPoint == null || _endPoint == null || _shortestPath.isEmpty) {
-      return 'No path available';
+      return AppLocalizations.of(context)!.noPathAvailable;
     }
 
     final startName = _startPoint!.name;
@@ -1047,8 +1394,11 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
     final directions = <String>[];
     String currentDirection = _getInitialDirection();
     
+    // Get localized text
+    final l10n = AppLocalizations.of(context)!;
+    
     // First instruction
-    directions.add('Start facing $currentDirection. ');
+    directions.add(l10n.startFacing(currentDirection));
     
     // Process each step
     for (int i = 1; i < _shortestPath.length; i++) {
@@ -1066,9 +1416,9 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
       
       // Add step instruction
       if (nextPos != null) {
-        directions.add('Take 1 step forward. ');
+        directions.add(l10n.takeStep);
       } else {
-        directions.add('Take 1 step forward to reach ${_endPoint!.name}. ');
+        directions.add(l10n.takeStepToDestination(_endPoint!.name));
       }
     }
     
@@ -1077,7 +1427,7 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
 
   String _generateTTSInstructions() {
     if (_startPoint == null || _endPoint == null || _shortestPath.isEmpty) {
-      return 'No path available';
+      return AppLocalizations.of(context)!.noPathAvailable;
     }
 
     final startName = _startPoint!.name;
@@ -1088,11 +1438,14 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
       return 'You are already at $endName';
     }
 
+    // Get localized text
+    final l10n = AppLocalizations.of(context)!;
+
     // Generate TTS-friendly instructions
     final directions = <String>[];
     String currentDirection = _getInitialDirection();
     
-    directions.add('Starting from $startName, face $currentDirection. ');
+    directions.add(l10n.startingFrom(startName, currentDirection));
     
     for (int i = 1; i < _shortestPath.length; i++) {
       final prevPos = _shortestPath[i - 1];
@@ -1108,44 +1461,47 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
       }
       
       if (nextPos != null) {
-        directions.add('Walk forward one step. ');
+        directions.add(l10n.walkForward);
       } else {
-        directions.add('Walk forward one step to reach $endName. ');
+        directions.add(l10n.walkForwardToDestination(endName));
       }
     }
     
-    directions.add('You have arrived at $endName. ');
+    directions.add(l10n.youHaveArrived(endName));
     
     return directions.join('');
   }
 
   String _getInitialDirection() {
     // Determine initial direction based on first step
-    if (_shortestPath.length < 2) return 'north';
+    if (_shortestPath.length < 2) return AppLocalizations.of(context)!.directionNorth;
     
     final startPos = _shortestPath[0];
     final firstStep = _shortestPath[1];
     
-    if (firstStep.row < startPos.row) return 'north';
-    if (firstStep.row > startPos.row) return 'south';
-    if (firstStep.col < startPos.col) return 'west';
-    if (firstStep.col > startPos.col) return 'east';
+    if (firstStep.row < startPos.row) return AppLocalizations.of(context)!.directionNorth;
+    if (firstStep.row > startPos.row) return AppLocalizations.of(context)!.directionSouth;
+    if (firstStep.col < startPos.col) return AppLocalizations.of(context)!.directionLeft;
+    if (firstStep.col > startPos.col) return AppLocalizations.of(context)!.directionRight;
     
-    return 'north';
+    return AppLocalizations.of(context)!.directionNorth;
   }
 
   String _getStepDirection(GridPosition from, GridPosition to) {
-    if (to.row < from.row) return 'north';
-    if (to.row > from.row) return 'south';
-    if (to.col < from.col) return 'west';
-    if (to.col > from.col) return 'east';
-    return 'north';
+    if (to.row < from.row) return AppLocalizations.of(context)!.directionNorth;
+    if (to.row > from.row) return AppLocalizations.of(context)!.directionSouth;
+    if (to.col < from.col) return AppLocalizations.of(context)!.directionLeft;
+    if (to.col > from.col) return AppLocalizations.of(context)!.directionRight;
+    return AppLocalizations.of(context)!.directionNorth;
   }
 
   String _getTurnInstruction(String currentDirection, String targetDirection) {
     if (currentDirection == targetDirection) return '';
     
-    final directions = ['north', 'east', 'south', 'west'];
+    // Get localized text
+    final l10n = AppLocalizations.of(context)!;
+    
+    final directions = [l10n.directionNorth, l10n.directionRight, l10n.directionSouth, l10n.directionLeft];
     final currentIndex = directions.indexOf(currentDirection);
     final targetIndex = directions.indexOf(targetDirection);
     
@@ -1156,11 +1512,11 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
     if (turnAmount < 0) turnAmount += 4;
     
     if (turnAmount == 1) {
-      return 'Turn right. ';
+      return l10n.turnRight;
     } else if (turnAmount == 2) {
-      return 'Turn around. ';
+      return l10n.turnAround;
     } else if (turnAmount == 3) {
-      return 'Turn left. ';
+      return l10n.turnLeft;
     }
     
     return '';

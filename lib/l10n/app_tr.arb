@@ -1,0 +1,120 @@
+{
+  "@@locale": "tr",
+  "appTitle": "BrightWay",
+  "startPoint": "Başlangıç Noktası",
+  "endPoint": "Hedef Nokta",
+  "calculatePath": "Yol Hesapla",
+  "pathFound": "Yol Bulundu",
+  "noPathAvailable": "Yol bulunamadı",
+  "calculatingPath": "Yol hesaplanıyor...",
+  "pathSteps": "Yol: {steps} adım",
+  "navigationInstructions": "Yönlendirme Talimatları",
+  "startFacing": "{direction} yönüne dönerek başlayın",
+  "turnLeft": "Sola dönün",
+  "turnRight": "Sağa dönün",
+  "turnAround": "Geri dönün",
+  "goStraight": "Düz gidin",
+  "takeStep": "1 adım ileri gidin",
+  "takeStepToDestination": "{destination} konumuna ulaşmak için 1 adım ileri gidin",
+  "youHaveArrived": "{destination} konumuna ulaştınız",
+  "startingFrom": "{start} konumundan başlayarak {direction} yönüne dönün",
+  "walkForward": "Bir adım ileri yürüyün",
+  "walkForwardToDestination": "{destination} konumuna ulaşmak için bir adım ileri yürüyün",
+  "directionNorth": "kuzey",
+  "directionSouth": "güney",
+  "directionLeft": "sol",
+  "directionRight": "sağ",
+  "pathfindingStartingAlgorithm": "A* algoritması {start} konumundan {end} konumuna başlatılıyor",
+  "pathfindingGridSize": "Izgara boyutu: {rows}x{cols}",
+  "pathfindingPathFound": "Yol {iterations} iterasyonda bulundu",
+  "pathfindingPathCalculated": "Yol hesaplandı: {steps} adım",
+  "pathfindingNoPathFound": "{iterations} iterasyonda yol bulunamadı",
+  "gridLegend": "Açıklama: [D] = Yürünebilir (kapılar), [X] = Engel (hareketi engeller), [ ] = Boş alan",
+  "gridNote": "Not: Tüm öğeler hedef olabilir, ancak sadece kapılar hareket etmeye izin verir",
+  "gridRow": "Satır {row}",
+  "itemToilet": "Tuvalet",
+  "itemTable": "Masa",
+  "itemChair": "Sandalye",
+  "itemDoor": "Kapı",
+  "itemExitDoor": "Çıkış Kapısı",
+  "itemWall": "Duvar",
+  "itemObstacle": "Engel",
+  "errorPathCalculation": "Yol hesaplanırken hata: {error}",
+  "errorTTSFailed": "Metin-konuşma başarısız: {error}",
+  "@errorTTSFailed": {
+    "description": "TTS error message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "userWelcome": "Hoş Geldiniz!",
+  "@userWelcome": {
+    "description": "Welcome message for users"
+  },
+  "userPanel": "Kullanıcı Paneli",
+  "@userPanel": {
+    "description": "User panel title"
+  },
+  "places": "Mekanlar",
+  "@places": {
+    "description": "Places section title"
+  },
+  "placesSubtitle": "Mevcut mekanları keşfedin",
+  "@placesSubtitle": {
+    "description": "Places section subtitle"
+  },
+  "help": "Yardım",
+  "@help": {
+    "description": "Help section title"
+  },
+  "helpSubtitle": "Kullanım kılavuzu",
+  "@helpSubtitle": {
+    "description": "Help section subtitle"
+  },
+  "settings": "Ayarlar",
+  "@settings": {
+    "description": "Settings section title"
+  },
+  "settingsSubtitle": "Uygulama ayarları",
+  "@settingsSubtitle": {
+    "description": "Settings section subtitle"
+  },
+  "about": "Hakkında",
+  "@about": {
+    "description": "About section title"
+  },
+  "aboutSubtitle": "Uygulama bilgileri",
+  "@aboutSubtitle": {
+    "description": "About section subtitle"
+  },
+  "helpTitle": "Yardım",
+  "@helpTitle": {
+    "description": "Help dialog title"
+  },
+  "helpContent": "Mekanları Keşfetme:\n• Mekanlar bölümüne tıklayarak mevcut tasarımları görüntüleyin\n• Bir mekan seçerek detaylarını inceleyin\n• Navigasyon talimatlarını dinleyin\n\nNavigasyon:\n• Sol, sağ, yukarı, aşağı yönlerini kullanın\n• Metin-konuşma özelliği ile sesli yönlendirme alın",
+  "@helpContent": {
+    "description": "Help dialog content"
+  },
+  "settingsTitle": "Ayarlar",
+  "@settingsTitle": {
+    "description": "Settings dialog title"
+  },
+  "settingsContent": "Ayarlar yakında eklenecek...",
+  "@settingsContent": {
+    "description": "Settings dialog content"
+  },
+  "aboutTitle": "Hakkında",
+  "@aboutTitle": {
+    "description": "About dialog title"
+  },
+  "aboutContent": "Görme engelli kullanıcılar için mekan navigasyon uygulaması\n\nÖzellikler:\n• Grid tabanlı mekan tasarımı\n• A* algoritması ile en kısa yol bulma\n• Metin-konuşma ile sesli navigasyon\n• Türkçe dil desteği",
+  "@aboutContent": {
+    "description": "About dialog content"
+  },
+  "ok": "Tamam",
+  "@ok": {
+    "description": "OK button text"
+  }
+}
