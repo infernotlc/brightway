@@ -104,19 +104,19 @@ abstract class AppLocalizations {
   /// **'BrightWay'**
   String get appTitle;
 
-  /// No description provided for @startPoint.
+  /// Start point label
   ///
   /// In en, this message translates to:
   /// **'Start Point'**
   String get startPoint;
 
-  /// No description provided for @endPoint.
+  /// End point label
   ///
   /// In en, this message translates to:
   /// **'End Point'**
   String get endPoint;
 
-  /// No description provided for @calculatePath.
+  /// Calculate path button text
   ///
   /// In en, this message translates to:
   /// **'Calculate Path'**
@@ -146,7 +146,7 @@ abstract class AppLocalizations {
   /// **'Path: {steps} steps'**
   String pathSteps(int steps);
 
-  /// No description provided for @navigationInstructions.
+  /// Navigation instructions section title
   ///
   /// In en, this message translates to:
   /// **'Navigation Instructions'**
@@ -368,18 +368,6 @@ abstract class AppLocalizations {
   /// **'Discover available places'**
   String get placesSubtitle;
 
-  /// Help section title
-  ///
-  /// In en, this message translates to:
-  /// **'Help'**
-  String get help;
-
-  /// Help section subtitle
-  ///
-  /// In en, this message translates to:
-  /// **'Usage guide'**
-  String get helpSubtitle;
-
   /// Settings section title
   ///
   /// In en, this message translates to:
@@ -392,59 +380,227 @@ abstract class AppLocalizations {
   /// **'App settings'**
   String get settingsSubtitle;
 
-  /// About section title
-  ///
-  /// In en, this message translates to:
-  /// **'About'**
-  String get about;
-
-  /// About section subtitle
-  ///
-  /// In en, this message translates to:
-  /// **'App information'**
-  String get aboutSubtitle;
-
-  /// Help dialog title
-  ///
-  /// In en, this message translates to:
-  /// **'Help'**
-  String get helpTitle;
-
-  /// Help dialog content
-  ///
-  /// In en, this message translates to:
-  /// **'Discovering Places:\n• Click on Places section to view available designs\n• Select a place to see its details\n• Listen to navigation instructions\n\nNavigation:\n• Use left, right, up, down directions\n• Get voice guidance with text-to-speech feature'**
-  String get helpContent;
-
   /// Settings dialog title
   ///
   /// In en, this message translates to:
   /// **'Settings'**
   String get settingsTitle;
 
-  /// Settings dialog content
+  /// Language selection title in settings
   ///
   /// In en, this message translates to:
-  /// **'Settings will be added soon...'**
-  String get settingsContent;
+  /// **'Language Selection'**
+  String get languageSelection;
 
-  /// About dialog title
+  /// Language section title in settings
   ///
   /// In en, this message translates to:
-  /// **'About'**
-  String get aboutTitle;
+  /// **'Language'**
+  String get languageSection;
 
-  /// About dialog content
+  /// Cancel button text
   ///
   /// In en, this message translates to:
-  /// **'Grid-based place navigation app for visually impaired users\n\nFeatures:\n• Grid-based place design\n• Shortest path finding with A* algorithm\n• Voice navigation with text-to-speech\n• Turkish language support'**
-  String get aboutContent;
+  /// **'Cancel'**
+  String get cancel;
 
-  /// OK button text
+  /// Apply button text
   ///
   /// In en, this message translates to:
-  /// **'OK'**
-  String get ok;
+  /// **'Apply'**
+  String get apply;
+
+  /// Apply changes button text
+  ///
+  /// In en, this message translates to:
+  /// **'Apply Changes'**
+  String get applyChanges;
+
+  /// Information about language change effects
+  ///
+  /// In en, this message translates to:
+  /// **'Language changes will affect both the app interface and text-to-speech. The app will restart to apply the new language.'**
+  String get languageChangeInfo;
+
+  /// UserScreen app bar title
+  ///
+  /// In en, this message translates to:
+  /// **'Available Places'**
+  String get availablePlaces;
+
+  /// UserScreen welcome message
+  ///
+  /// In en, this message translates to:
+  /// **'Discover Amazing Places!'**
+  String get discoverAmazingPlaces;
+
+  /// UserScreen subtitle description
+  ///
+  /// In en, this message translates to:
+  /// **'Browse designs created by our community admins'**
+  String get browseDesignsDescription;
+
+  /// UserScreen section title
+  ///
+  /// In en, this message translates to:
+  /// **'Available Designs'**
+  String get availableDesigns;
+
+  /// Design count text with placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'{count} designs'**
+  String designsCount(int count);
+
+  /// Empty state title
+  ///
+  /// In en, this message translates to:
+  /// **'No Designs Available'**
+  String get noDesignsAvailable;
+
+  /// Empty state description
+  ///
+  /// In en, this message translates to:
+  /// **'Admins haven\'t created any designs yet.\nCheck back later!'**
+  String get noDesignsDescription;
+
+  /// Created by text with placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Created by: {adminName}'**
+  String createdBy(String adminName);
+
+  /// Items count text with placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'{count} items'**
+  String itemsCount(int count);
+
+  /// Created date text with placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Created {date}'**
+  String createdOn(String date);
+
+  /// Select start point dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Select Start Point'**
+  String get selectStartPoint;
+
+  /// Select end point dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Select End Point'**
+  String get selectEndPoint;
+
+  /// Path length display with placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Path Length: {steps} steps'**
+  String pathLength(int steps);
+
+  /// Message when no path is found
+  ///
+  /// In en, this message translates to:
+  /// **'No path found between the selected points'**
+  String get noPathFound;
+
+  /// Error message for path calculation
+  ///
+  /// In en, this message translates to:
+  /// **'Error calculating path'**
+  String get pathCalculationError;
+
+  /// Grid size display with placeholders
+  ///
+  /// In en, this message translates to:
+  /// **'Grid Size: {rows}×{cols}'**
+  String gridSize(int rows, int cols);
+
+  /// Total items count with placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Total Items: {count}'**
+  String totalItems(int count);
+
+  /// Calculating state text
+  ///
+  /// In en, this message translates to:
+  /// **'Calculating...'**
+  String get calculating;
+
+  /// Go button text
+  ///
+  /// In en, this message translates to:
+  /// **'Go!'**
+  String get go;
+
+  /// Select point text with placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Select {title}'**
+  String selectPoint(String title);
+
+  /// Position display with placeholders
+  ///
+  /// In en, this message translates to:
+  /// **'Position: ({row}, {col})'**
+  String positionAt(int row, int col);
+
+  /// Navigation path section title
+  ///
+  /// In en, this message translates to:
+  /// **'Navigation Path'**
+  String get navigationPath;
+
+  /// Total steps display with placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Total steps: {count}'**
+  String totalSteps(int count);
+
+  /// Step-by-step directions label
+  ///
+  /// In en, this message translates to:
+  /// **'Step-by-step directions:'**
+  String get stepByStepDirections;
+
+  /// TTS instructions text
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the speaker button to hear navigation instructions'**
+  String get tapSpeakerToHearInstructions;
+
+  /// TTS not available instructions text
+  ///
+  /// In en, this message translates to:
+  /// **'TTS not available. Tap the button below to show instructions.'**
+  String get ttsNotAvailableTapButtonToShowInstructions;
+
+  /// Retry TTS button text
+  ///
+  /// In en, this message translates to:
+  /// **'Retry TTS'**
+  String get retryTts;
+
+  /// Speak navigation instructions button text
+  ///
+  /// In en, this message translates to:
+  /// **'Speak Navigation Instructions'**
+  String get speakNavigationInstructions;
+
+  /// Show navigation instructions button text
+  ///
+  /// In en, this message translates to:
+  /// **'Show Navigation Instructions'**
+  String get showNavigationInstructions;
+
+  /// Navigation section title
+  ///
+  /// In en, this message translates to:
+  /// **'Navigation'**
+  String get navigation;
 }
 
 class _AppLocalizationsDelegate

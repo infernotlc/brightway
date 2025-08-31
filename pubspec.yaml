@@ -42,6 +42,7 @@ dependencies:
 
   # State management (Bloc örnek)
   flutter_bloc: ^9.1.1
+  equatable: ^2.0.5
 
   # Text-to-Speech for navigation
   flutter_tts: ^3.8.5

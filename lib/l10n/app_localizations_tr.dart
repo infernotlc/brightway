@@ -15,7 +15,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get startPoint => 'Başlangıç Noktası';
 
   @override
-  String get endPoint => 'Hedef Nokta';
+  String get endPoint => 'Bitiş Noktası';
 
   @override
   String get calculatePath => 'Yol Hesapla';
@@ -35,7 +35,7 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get navigationInstructions => 'Yönlendirme Talimatları';
+  String get navigationInstructions => 'Navigasyon Talimatları';
 
   @override
   String startFacing(String direction) {
@@ -174,43 +174,145 @@ class AppLocalizationsTr extends AppLocalizations {
   String get placesSubtitle => 'Mevcut mekanları keşfedin';
 
   @override
-  String get help => 'Yardım';
-
-  @override
-  String get helpSubtitle => 'Kullanım kılavuzu';
-
-  @override
   String get settings => 'Ayarlar';
 
   @override
   String get settingsSubtitle => 'Uygulama ayarları';
 
   @override
-  String get about => 'Hakkında';
-
-  @override
-  String get aboutSubtitle => 'Uygulama bilgileri';
-
-  @override
-  String get helpTitle => 'Yardım';
-
-  @override
-  String get helpContent =>
-      'Mekanları Keşfetme:\n• Mekanlar bölümüne tıklayarak mevcut tasarımları görüntüleyin\n• Bir mekan seçerek detaylarını inceleyin\n• Navigasyon talimatlarını dinleyin\n\nNavigasyon:\n• Sol, sağ, yukarı, aşağı yönlerini kullanın\n• Metin-konuşma özelliği ile sesli yönlendirme alın';
-
-  @override
   String get settingsTitle => 'Ayarlar';
 
   @override
-  String get settingsContent => 'Ayarlar yakında eklenecek...';
+  String get languageSelection => 'Dil Seçimi';
 
   @override
-  String get aboutTitle => 'Hakkında';
+  String get languageSection => 'Dil';
 
   @override
-  String get aboutContent =>
-      'Görme engelli kullanıcılar için mekan navigasyon uygulaması\n\nÖzellikler:\n• Grid tabanlı mekan tasarımı\n• A* algoritması ile en kısa yol bulma\n• Metin-konuşma ile sesli navigasyon\n• Türkçe dil desteği';
+  String get cancel => 'İptal';
 
   @override
-  String get ok => 'Tamam';
+  String get apply => 'Uygula';
+
+  @override
+  String get applyChanges => 'Değişiklikleri Uygula';
+
+  @override
+  String get languageChangeInfo =>
+      'Dil değişiklikleri hem uygulama arayüzünü hem de metin-konuşma özelliğini etkileyecektir. Yeni dil uygulanmak için uygulama yeniden başlatılacaktır.';
+
+  @override
+  String get availablePlaces => 'Mevcut Mekanlar';
+
+  @override
+  String get discoverAmazingPlaces => 'Harika Mekanları Keşfedin!';
+
+  @override
+  String get browseDesignsDescription =>
+      'Topluluk yöneticilerimiz tarafından oluşturulan tasarımları keşfedin';
+
+  @override
+  String get availableDesigns => 'Mevcut Tasarımlar';
+
+  @override
+  String designsCount(int count) {
+    return '$count tasarım';
+  }
+
+  @override
+  String get noDesignsAvailable => 'Tasarım Bulunamadı';
+
+  @override
+  String get noDesignsDescription =>
+      'Yöneticiler henüz tasarım oluşturmadı.\nDaha sonra tekrar kontrol edin!';
+
+  @override
+  String createdBy(String adminName) {
+    return 'Oluşturan: $adminName';
+  }
+
+  @override
+  String itemsCount(int count) {
+    return '$count öğe';
+  }
+
+  @override
+  String createdOn(String date) {
+    return 'Oluşturulma: $date';
+  }
+
+  @override
+  String get selectStartPoint => 'Başlangıç Noktası Seç';
+
+  @override
+  String get selectEndPoint => 'Bitiş Noktası Seç';
+
+  @override
+  String pathLength(int steps) {
+    return 'Yol Uzunluğu: $steps adım';
+  }
+
+  @override
+  String get noPathFound => 'Seçilen noktalar arasında yol bulunamadı';
+
+  @override
+  String get pathCalculationError => 'Yol hesaplanırken hata oluştu';
+
+  @override
+  String gridSize(int rows, int cols) {
+    return 'Izgara Boyutu: $rows×$cols';
+  }
+
+  @override
+  String totalItems(int count) {
+    return 'Toplam Öğe: $count';
+  }
+
+  @override
+  String get calculating => 'Hesaplanıyor...';
+
+  @override
+  String get go => 'Git!';
+
+  @override
+  String selectPoint(String title) {
+    return '$title Seç';
+  }
+
+  @override
+  String positionAt(int row, int col) {
+    return 'Konum: ($row, $col)';
+  }
+
+  @override
+  String get navigationPath => 'Navigasyon Yolu';
+
+  @override
+  String totalSteps(int count) {
+    return 'Toplam adım: $count';
+  }
+
+  @override
+  String get stepByStepDirections => 'Adım adım yönergeler:';
+
+  @override
+  String get tapSpeakerToHearInstructions =>
+      'Navigasyon talimatlarını duymak için hoparlör düğmesine dokunun';
+
+  @override
+  String get ttsNotAvailableTapButtonToShowInstructions =>
+      'TTS mevcut değil. Talimatları göstermek için aşağıdaki düğmeye dokunun.';
+
+  @override
+  String get retryTts => 'TTS\'yi Tekrar Dene';
+
+  @override
+  String get speakNavigationInstructions =>
+      'Navigasyon Talimatlarını Seslendir';
+
+  @override
+  String get showNavigationInstructions => 'Navigasyon Talimatlarını Göster';
+
+  @override
+  String get navigation => 'Navigasyon';
 }

@@ -178,14 +178,6 @@
   "@placesSubtitle": {
     "description": "Places section subtitle"
   },
-  "help": "Help",
-  "@help": {
-    "description": "Help section title"
-  },
-  "helpSubtitle": "Usage guide",
-  "@helpSubtitle": {
-    "description": "Help section subtitle"
-  },
   "settings": "Settings",
   "@settings": {
     "description": "Settings section title"
@@ -194,40 +186,224 @@
   "@settingsSubtitle": {
     "description": "Settings section subtitle"
   },
-  "about": "About",
-  "@about": {
-    "description": "About section title"
-  },
-  "aboutSubtitle": "App information",
-  "@aboutSubtitle": {
-    "description": "About section subtitle"
-  },
-  "helpTitle": "Help",
-  "@helpTitle": {
-    "description": "Help dialog title"
-  },
-  "helpContent": "Discovering Places:\n• Click on Places section to view available designs\n• Select a place to see its details\n• Listen to navigation instructions\n\nNavigation:\n• Use left, right, up, down directions\n• Get voice guidance with text-to-speech feature",
-  "@helpContent": {
-    "description": "Help dialog content"
-  },
   "settingsTitle": "Settings",
   "@settingsTitle": {
     "description": "Settings dialog title"
   },
-  "settingsContent": "Settings will be added soon...",
-  "@settingsContent": {
-    "description": "Settings dialog content"
+  "languageSelection": "Language Selection",
+  "@languageSelection": {
+    "description": "Language selection title in settings"
   },
-  "aboutTitle": "About",
-  "@aboutTitle": {
-    "description": "About dialog title"
+  "languageSection": "Language",
+  "@languageSection": {
+    "description": "Language section title in settings"
   },
-  "aboutContent": "Grid-based place navigation app for visually impaired users\n\nFeatures:\n• Grid-based place design\n• Shortest path finding with A* algorithm\n• Voice navigation with text-to-speech\n• Turkish language support",
-  "@aboutContent": {
-    "description": "About dialog content"
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel button text"
   },
-  "ok": "OK",
-  "@ok": {
-    "description": "OK button text"
+  "apply": "Apply",
+  "@apply": {
+    "description": "Apply button text"
+  },
+  "applyChanges": "Apply Changes",
+  "@applyChanges": {
+    "description": "Apply changes button text"
+  },
+  "languageChangeInfo": "Language changes will affect both the app interface and text-to-speech. The app will restart to apply the new language.",
+  "@languageChangeInfo": {
+    "description": "Information about language change effects"
+  },
+  "availablePlaces": "Available Places",
+  "@availablePlaces": {
+    "description": "UserScreen app bar title"
+  },
+  "discoverAmazingPlaces": "Discover Amazing Places!",
+  "@discoverAmazingPlaces": {
+    "description": "UserScreen welcome message"
+  },
+  "browseDesignsDescription": "Browse designs created by our community admins",
+  "@browseDesignsDescription": {
+    "description": "UserScreen subtitle description"
+  },
+  "availableDesigns": "Available Designs",
+  "@availableDesigns": {
+    "description": "UserScreen section title"
+  },
+  "designsCount": "{count} designs",
+  "@designsCount": {
+    "description": "Design count text with placeholder",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noDesignsAvailable": "No Designs Available",
+  "@noDesignsAvailable": {
+    "description": "Empty state title"
+  },
+  "noDesignsDescription": "Admins haven't created any designs yet.\nCheck back later!",
+  "@noDesignsDescription": {
+    "description": "Empty state description"
+  },
+  "createdBy": "Created by: {adminName}",
+  "@createdBy": {
+    "description": "Created by text with placeholder",
+    "placeholders": {
+      "adminName": {
+        "type": "String"
+      }
+    }
+  },
+  "itemsCount": "{count} items",
+  "@itemsCount": {
+    "description": "Items count text with placeholder",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "createdOn": "Created {date}",
+  "@createdOn": {
+    "description": "Created date text with placeholder",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "selectStartPoint": "Select Start Point",
+  "@selectStartPoint": {
+    "description": "Select start point dialog title"
+  },
+  "selectEndPoint": "Select End Point",
+  "@selectEndPoint": {
+    "description": "Select end point dialog title"
+  },
+  "calculatePath": "Calculate Path",
+  "@calculatePath": {
+    "description": "Calculate path button text"
+  },
+  "navigationInstructions": "Navigation Instructions",
+  "@navigationInstructions": {
+    "description": "Navigation instructions section title"
+  },
+  "pathLength": "Path Length: {steps} steps",
+  "@pathLength": {
+    "description": "Path length display with placeholder",
+    "placeholders": {
+      "steps": {
+        "type": "int"
+      }
+    }
+  },
+  "startPoint": "Start Point",
+  "@startPoint": {
+    "description": "Start point label"
+  },
+  "endPoint": "End Point",
+  "@endPoint": {
+    "description": "End point label"
+  },
+  "noPathFound": "No path found between the selected points",
+  "@noPathFound": {
+    "description": "Message when no path is found"
+  },
+  "pathCalculationError": "Error calculating path",
+  "@pathCalculationError": {
+    "description": "Error message for path calculation"
+  },
+  "gridSize": "Grid Size: {rows}×{cols}",
+  "@gridSize": {
+    "description": "Grid size display with placeholders",
+    "placeholders": {
+      "rows": {
+        "type": "int"
+      },
+      "cols": {
+        "type": "int"
+      }
+    }
+  },
+  "totalItems": "Total Items: {count}",
+  "@totalItems": {
+    "description": "Total items count with placeholder",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "calculating": "Calculating...",
+  "@calculating": {
+    "description": "Calculating state text"
+  },
+  "go": "Go!",
+  "@go": {
+    "description": "Go button text"
+  },
+  "selectPoint": "Select {title}",
+  "@selectPoint": {
+    "description": "Select point text with placeholder",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "positionAt": "Position: ({row}, {col})",
+  "@positionAt": {
+    "description": "Position display with placeholders",
+    "placeholders": {
+      "row": {
+        "type": "int"
+      },
+      "col": {
+        "type": "int"
+      }
+    }
+  },
+  "navigationPath": "Navigation Path",
+  "@navigationPath": {
+    "description": "Navigation path section title"
+  },
+  "totalSteps": "Total steps: {count}",
+  "@totalSteps": {
+    "description": "Total steps display with placeholder",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "stepByStepDirections": "Step-by-step directions:",
+  "@stepByStepDirections": {
+    "description": "Step-by-step directions label"
+  },
+  "tapSpeakerToHearInstructions": "Tap the speaker button to hear navigation instructions",
+  "@tapSpeakerToHearInstructions": {
+    "description": "TTS instructions text"
+  },
+  "ttsNotAvailableTapButtonToShowInstructions": "TTS not available. Tap the button below to show instructions.",
+  "@ttsNotAvailableTapButtonToShowInstructions": {
+    "description": "TTS not available instructions text"
+  },
+  "retryTts": "Retry TTS",
+  "@retryTts": {
+    "description": "Retry TTS button text"
+  },
+  "speakNavigationInstructions": "Speak Navigation Instructions",
+  "@speakNavigationInstructions": {
+    "description": "Speak navigation instructions button text"
+  },
+  "showNavigationInstructions": "Show Navigation Instructions",
+  "@showNavigationInstructions": {
+    "description": "Show navigation instructions button text"
+  },
+  "navigation": "Navigation",
+  "@navigation": {
+    "description": "Navigation section title"
   }
 }

@@ -174,43 +174,144 @@ class AppLocalizationsEn extends AppLocalizations {
   String get placesSubtitle => 'Discover available places';
 
   @override
-  String get help => 'Help';
-
-  @override
-  String get helpSubtitle => 'Usage guide';
-
-  @override
   String get settings => 'Settings';
 
   @override
   String get settingsSubtitle => 'App settings';
 
   @override
-  String get about => 'About';
-
-  @override
-  String get aboutSubtitle => 'App information';
-
-  @override
-  String get helpTitle => 'Help';
-
-  @override
-  String get helpContent =>
-      'Discovering Places:\n• Click on Places section to view available designs\n• Select a place to see its details\n• Listen to navigation instructions\n\nNavigation:\n• Use left, right, up, down directions\n• Get voice guidance with text-to-speech feature';
-
-  @override
   String get settingsTitle => 'Settings';
 
   @override
-  String get settingsContent => 'Settings will be added soon...';
+  String get languageSelection => 'Language Selection';
 
   @override
-  String get aboutTitle => 'About';
+  String get languageSection => 'Language';
 
   @override
-  String get aboutContent =>
-      'Grid-based place navigation app for visually impaired users\n\nFeatures:\n• Grid-based place design\n• Shortest path finding with A* algorithm\n• Voice navigation with text-to-speech\n• Turkish language support';
+  String get cancel => 'Cancel';
 
   @override
-  String get ok => 'OK';
+  String get apply => 'Apply';
+
+  @override
+  String get applyChanges => 'Apply Changes';
+
+  @override
+  String get languageChangeInfo =>
+      'Language changes will affect both the app interface and text-to-speech. The app will restart to apply the new language.';
+
+  @override
+  String get availablePlaces => 'Available Places';
+
+  @override
+  String get discoverAmazingPlaces => 'Discover Amazing Places!';
+
+  @override
+  String get browseDesignsDescription =>
+      'Browse designs created by our community admins';
+
+  @override
+  String get availableDesigns => 'Available Designs';
+
+  @override
+  String designsCount(int count) {
+    return '$count designs';
+  }
+
+  @override
+  String get noDesignsAvailable => 'No Designs Available';
+
+  @override
+  String get noDesignsDescription =>
+      'Admins haven\'t created any designs yet.\nCheck back later!';
+
+  @override
+  String createdBy(String adminName) {
+    return 'Created by: $adminName';
+  }
+
+  @override
+  String itemsCount(int count) {
+    return '$count items';
+  }
+
+  @override
+  String createdOn(String date) {
+    return 'Created $date';
+  }
+
+  @override
+  String get selectStartPoint => 'Select Start Point';
+
+  @override
+  String get selectEndPoint => 'Select End Point';
+
+  @override
+  String pathLength(int steps) {
+    return 'Path Length: $steps steps';
+  }
+
+  @override
+  String get noPathFound => 'No path found between the selected points';
+
+  @override
+  String get pathCalculationError => 'Error calculating path';
+
+  @override
+  String gridSize(int rows, int cols) {
+    return 'Grid Size: $rows×$cols';
+  }
+
+  @override
+  String totalItems(int count) {
+    return 'Total Items: $count';
+  }
+
+  @override
+  String get calculating => 'Calculating...';
+
+  @override
+  String get go => 'Go!';
+
+  @override
+  String selectPoint(String title) {
+    return 'Select $title';
+  }
+
+  @override
+  String positionAt(int row, int col) {
+    return 'Position: ($row, $col)';
+  }
+
+  @override
+  String get navigationPath => 'Navigation Path';
+
+  @override
+  String totalSteps(int count) {
+    return 'Total steps: $count';
+  }
+
+  @override
+  String get stepByStepDirections => 'Step-by-step directions:';
+
+  @override
+  String get tapSpeakerToHearInstructions =>
+      'Tap the speaker button to hear navigation instructions';
+
+  @override
+  String get ttsNotAvailableTapButtonToShowInstructions =>
+      'TTS not available. Tap the button below to show instructions.';
+
+  @override
+  String get retryTts => 'Retry TTS';
+
+  @override
+  String get speakNavigationInstructions => 'Speak Navigation Instructions';
+
+  @override
+  String get showNavigationInstructions => 'Show Navigation Instructions';
+
+  @override
+  String get navigation => 'Navigation';
 }

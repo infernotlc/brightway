@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/blocs/auth_bloc.dart';
+import '../../../core/blocs/language_bloc.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/models/grid_models.dart';
 import '../../../core/services/design_service.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../l10n/app_localizations.dart';
 import 'place_viewer_screen.dart';
 
 class UserScreen extends StatefulWidget {
@@ -68,161 +70,173 @@ class _UserScreenState extends State<UserScreen> {
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Available Places'),
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              setState(() {
-                _isLoading = true;
-              });
-              _loadAdminDesigns();
-            },
-            tooltip: 'Refresh Designs',
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Logout'),
-                  content: const Text('Are you sure you want to logout?'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Cancel'),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        context.read<AuthBloc>().add(SignOutRequested());
-                      },
-                      child: const Text('Logout'),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Welcome Section
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Theme.of(context).primaryColor,
-                      Theme.of(context).primaryColor.withOpacity(0.8),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 25,
-                          backgroundColor: Colors.white,
-                          child: Icon(
-                            Icons.place,
-                            size: 30,
-                            color: Theme.of(context).primaryColor,
-                          ),
+    return BlocBuilder<LanguageBloc, LanguageState>(
+      builder: (context, languageState) {
+        // Force rebuild when language changes
+        final currentLocale = languageState is LanguageLoaded 
+            ? languageState.locale 
+            : const Locale('tr', 'TR');
+        
+        final l10n = AppLocalizations.of(context)!;
+        
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(l10n.availablePlaces),
+            backgroundColor: Theme.of(context).primaryColor,
+            foregroundColor: Colors.white,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => Navigator.pop(context),
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.refresh),
+                onPressed: () {
+                  setState(() {
+                    _isLoading = true;
+                  });
+                  _loadAdminDesigns();
+                },
+                tooltip: 'Refresh Designs',
+              ),
+              IconButton(
+                icon: const Icon(Icons.logout),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Logout'),
+                      content: const Text('Are you sure you want to logout?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Cancel'),
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Discover Amazing Places!',
-                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                                                             Text(
-                                 'Browse designs created by our community admins',
-                                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                   color: Colors.white.withOpacity(0.9),
-                                 ),
-                               ),
-                            ],
-                          ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            context.read<AuthBloc>().add(SignOutRequested());
+                          },
+                          child: const Text('Logout'),
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Available Places Section
-              Row(
-                children: [
-                  Icon(
-                    Icons.place,
-                    color: Theme.of(context).primaryColor,
-                    size: 24,
-                  ),
-                  const SizedBox(width: 8),
-                                     Text(
-                     'Available Designs',
-                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                       fontWeight: FontWeight.bold,
-                     ),
-                   ),
-                  const Spacer(),
-                                     Text(
-                     '${_places.length} designs',
-                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                       color: Colors.grey[600],
-                     ),
-                   ),
-                ],
-              ),
-              const SizedBox(height: 16),
-
-              // Places List
-              Expanded(
-                child: _isLoading
-                    ? const Center(
-                        child: CircularProgressIndicator(),
-                      )
-                    : _places.isEmpty
-                        ? _buildEmptyState()
-                        : _buildPlacesList(),
+                  );
+                },
               ),
             ],
           ),
-        ),
-      ),
+          body: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Welcome Section
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Theme.of(context).primaryColor,
+                          Theme.of(context).primaryColor.withOpacity(0.8),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 25,
+                              backgroundColor: Colors.white,
+                              child: Icon(
+                                Icons.place,
+                                size: 30,
+                                color: Theme.of(context).primaryColor,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    l10n.discoverAmazingPlaces,
+                                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    l10n.browseDesignsDescription,
+                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                      color: Colors.white.withOpacity(0.9),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Available Places Section
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.place,
+                        color: Theme.of(context).primaryColor,
+                        size: 24,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        l10n.availableDesigns,
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        l10n.designsCount(_places.length),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Places List
+                  Expanded(
+                    child: _isLoading
+                        ? const Center(
+                            child: CircularProgressIndicator(),
+                          )
+                        : _places.isEmpty
+                            ? _buildEmptyState()
+                            : _buildPlacesList(),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
   Widget _buildEmptyState() {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -233,20 +247,20 @@ class _UserScreenState extends State<UserScreen> {
             color: Colors.grey[400],
           ),
           const SizedBox(height: 16),
-                     Text(
-             'No Designs Available',
-             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-               color: Colors.grey[600],
-             ),
-           ),
-           const SizedBox(height: 8),
-           Text(
-             'Admins haven\'t created any designs yet.\nCheck back later!',
-             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-               color: Colors.grey[500],
-             ),
-             textAlign: TextAlign.center,
-           ),
+          Text(
+            l10n.noDesignsAvailable,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            l10n.noDesignsDescription,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Colors.grey[500],
+            ),
+            textAlign: TextAlign.center,
+          ),
         ],
       ),
     );
@@ -263,6 +277,7 @@ class _UserScreenState extends State<UserScreen> {
   }
 
   Widget _buildPlaceCard(Design place) {
+    final l10n = AppLocalizations.of(context)!;
     final adminName = _adminNames[place.createdBy] ?? 'Loading...';
     
     return Card(
@@ -320,7 +335,7 @@ class _UserScreenState extends State<UserScreen> {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              'Created by: $adminName',
+                              l10n.createdBy(adminName),
                               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 color: Colors.grey[500],
                                 fontStyle: FontStyle.italic,
@@ -348,11 +363,11 @@ class _UserScreenState extends State<UserScreen> {
                   const SizedBox(width: 8),
                   _buildInfoChip(
                     icon: Icons.abc_sharp,
-                    label: '${place.items.length} items',
+                    label: l10n.itemsCount(place.items.length),
                   ),
                   const Spacer(),
                   Text(
-                    'Created ${_formatDate(place.createdAt)}',
+                    l10n.createdOn(_formatDate(place.createdAt)),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: Colors.grey[500],
                     ),

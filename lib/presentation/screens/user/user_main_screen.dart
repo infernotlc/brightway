@@ -5,6 +5,7 @@ import '../../../core/models/user_model.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../l10n/app_localizations.dart';
 import 'user_screen.dart';
+import 'settings_screen.dart';
 
 class UserMainScreen extends StatelessWidget {
   final UserModel userData;
@@ -143,29 +144,16 @@ class UserMainScreen extends StatelessWidget {
                     ),
                     _buildUserCard(
                       context,
-                      icon: Icons.help,
-                      title: l10n.help,
-                      subtitle: l10n.helpSubtitle,
-                      onTap: () {
-                        _showHelpDialog(context);
-                      },
-                    ),
-                    _buildUserCard(
-                      context,
                       icon: Icons.settings,
                       title: l10n.settings,
                       subtitle: l10n.settingsSubtitle,
                       onTap: () {
-                        _showSettingsDialog(context);
-                      },
-                    ),
-                    _buildUserCard(
-                      context,
-                      icon: Icons.info,
-                      title: l10n.about,
-                      subtitle: l10n.aboutSubtitle,
-                      onTap: () {
-                        _showAboutDialog(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => SettingsScreen(userData: userData),
+                          ),
+                        );
                       },
                     ),
                   ],
@@ -222,60 +210,6 @@ class UserMainScreen extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  void _showHelpDialog(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.helpTitle),
-        content: Text(l10n.helpContent),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.ok),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showSettingsDialog(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.settingsTitle),
-        content: Text(l10n.settingsContent),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.ok),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showAboutDialog(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.aboutTitle),
-        content: Text(l10n.aboutContent),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.ok),
-          ),
-        ],
       ),
     );
   }

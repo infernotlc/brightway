@@ -65,14 +65,6 @@
   "@placesSubtitle": {
     "description": "Places section subtitle"
   },
-  "help": "Yardım",
-  "@help": {
-    "description": "Help section title"
-  },
-  "helpSubtitle": "Kullanım kılavuzu",
-  "@helpSubtitle": {
-    "description": "Help section subtitle"
-  },
   "settings": "Ayarlar",
   "@settings": {
     "description": "Settings section title"
@@ -81,40 +73,224 @@
   "@settingsSubtitle": {
     "description": "Settings section subtitle"
   },
-  "about": "Hakkında",
-  "@about": {
-    "description": "About section title"
-  },
-  "aboutSubtitle": "Uygulama bilgileri",
-  "@aboutSubtitle": {
-    "description": "About section subtitle"
-  },
-  "helpTitle": "Yardım",
-  "@helpTitle": {
-    "description": "Help dialog title"
-  },
-  "helpContent": "Mekanları Keşfetme:\n• Mekanlar bölümüne tıklayarak mevcut tasarımları görüntüleyin\n• Bir mekan seçerek detaylarını inceleyin\n• Navigasyon talimatlarını dinleyin\n\nNavigasyon:\n• Sol, sağ, yukarı, aşağı yönlerini kullanın\n• Metin-konuşma özelliği ile sesli yönlendirme alın",
-  "@helpContent": {
-    "description": "Help dialog content"
-  },
   "settingsTitle": "Ayarlar",
   "@settingsTitle": {
     "description": "Settings dialog title"
   },
-  "settingsContent": "Ayarlar yakında eklenecek...",
-  "@settingsContent": {
-    "description": "Settings dialog content"
+  "languageSelection": "Dil Seçimi",
+  "@languageSelection": {
+    "description": "Language selection title in settings"
   },
-  "aboutTitle": "Hakkında",
-  "@aboutTitle": {
-    "description": "About dialog title"
+  "languageSection": "Dil",
+  "@languageSection": {
+    "description": "Language section title in settings"
   },
-  "aboutContent": "Görme engelli kullanıcılar için mekan navigasyon uygulaması\n\nÖzellikler:\n• Grid tabanlı mekan tasarımı\n• A* algoritması ile en kısa yol bulma\n• Metin-konuşma ile sesli navigasyon\n• Türkçe dil desteği",
-  "@aboutContent": {
-    "description": "About dialog content"
+  "cancel": "İptal",
+  "@cancel": {
+    "description": "Cancel button text"
   },
-  "ok": "Tamam",
-  "@ok": {
-    "description": "OK button text"
+  "apply": "Uygula",
+  "@apply": {
+    "description": "Apply button text"
+  },
+  "applyChanges": "Değişiklikleri Uygula",
+  "@applyChanges": {
+    "description": "Apply changes button text"
+  },
+  "languageChangeInfo": "Dil değişiklikleri hem uygulama arayüzünü hem de metin-konuşma özelliğini etkileyecektir. Yeni dil uygulanmak için uygulama yeniden başlatılacaktır.",
+  "@languageChangeInfo": {
+    "description": "Information about language change effects"
+  },
+  "availablePlaces": "Mevcut Mekanlar",
+  "@availablePlaces": {
+    "description": "UserScreen app bar title"
+  },
+  "discoverAmazingPlaces": "Harika Mekanları Keşfedin!",
+  "@discoverAmazingPlaces": {
+    "description": "UserScreen welcome message"
+  },
+  "browseDesignsDescription": "Topluluk yöneticilerimiz tarafından oluşturulan tasarımları keşfedin",
+  "@browseDesignsDescription": {
+    "description": "UserScreen subtitle description"
+  },
+  "availableDesigns": "Mevcut Tasarımlar",
+  "@availableDesigns": {
+    "description": "UserScreen section title"
+  },
+  "designsCount": "{count} tasarım",
+  "@designsCount": {
+    "description": "Design count text with placeholder",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noDesignsAvailable": "Tasarım Bulunamadı",
+  "@noDesignsAvailable": {
+    "description": "Empty state title"
+  },
+  "noDesignsDescription": "Yöneticiler henüz tasarım oluşturmadı.\nDaha sonra tekrar kontrol edin!",
+  "@noDesignsDescription": {
+    "description": "Empty state description"
+  },
+  "createdBy": "Oluşturan: {adminName}",
+  "@createdBy": {
+    "description": "Created by text with placeholder",
+    "placeholders": {
+      "adminName": {
+        "type": "String"
+      }
+    }
+  },
+  "itemsCount": "{count} öğe",
+  "@itemsCount": {
+    "description": "Items count text with placeholder",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "createdOn": "Oluşturulma: {date}",
+  "@createdOn": {
+    "description": "Created date text with placeholder",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "selectStartPoint": "Başlangıç Noktası Seç",
+  "@selectStartPoint": {
+    "description": "Select start point dialog title"
+  },
+  "selectEndPoint": "Bitiş Noktası Seç",
+  "@selectEndPoint": {
+    "description": "Select end point dialog title"
+  },
+  "calculatePath": "Yol Hesapla",
+  "@calculatePath": {
+    "description": "Calculate path button text"
+  },
+  "navigationInstructions": "Navigasyon Talimatları",
+  "@navigationInstructions": {
+    "description": "Navigation instructions section title"
+  },
+  "pathLength": "Yol Uzunluğu: {steps} adım",
+  "@pathLength": {
+    "description": "Path length display with placeholder",
+    "placeholders": {
+      "steps": {
+        "type": "int"
+      }
+    }
+  },
+  "startPoint": "Başlangıç Noktası",
+  "@startPoint": {
+    "description": "Start point label"
+  },
+  "endPoint": "Bitiş Noktası",
+  "@endPoint": {
+    "description": "End point label"
+  },
+  "noPathFound": "Seçilen noktalar arasında yol bulunamadı",
+  "@noPathFound": {
+    "description": "Message when no path is found"
+  },
+  "pathCalculationError": "Yol hesaplanırken hata oluştu",
+  "@pathCalculationError": {
+    "description": "Error message for path calculation"
+  },
+  "gridSize": "Izgara Boyutu: {rows}×{cols}",
+  "@gridSize": {
+    "description": "Grid size display with placeholders",
+    "placeholders": {
+      "rows": {
+        "type": "int"
+      },
+      "cols": {
+        "type": "int"
+      }
+    }
+  },
+  "totalItems": "Toplam Öğe: {count}",
+  "@totalItems": {
+    "description": "Total items count with placeholder",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "calculating": "Hesaplanıyor...",
+  "@calculating": {
+    "description": "Calculating state text"
+  },
+  "go": "Git!",
+  "@go": {
+    "description": "Go button text"
+  },
+  "selectPoint": "{title} Seç",
+  "@selectPoint": {
+    "description": "Select point text with placeholder",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "positionAt": "Konum: ({row}, {col})",
+  "@positionAt": {
+    "description": "Position display with placeholders",
+    "placeholders": {
+      "row": {
+        "type": "int"
+      },
+      "col": {
+        "type": "int"
+      }
+    }
+  },
+  "navigationPath": "Navigasyon Yolu",
+  "@navigationPath": {
+    "description": "Navigation path section title"
+  },
+  "totalSteps": "Toplam adım: {count}",
+  "@totalSteps": {
+    "description": "Total steps display with placeholder",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "stepByStepDirections": "Adım adım yönergeler:",
+  "@stepByStepDirections": {
+    "description": "Step-by-step directions label"
+  },
+  "tapSpeakerToHearInstructions": "Navigasyon talimatlarını duymak için hoparlör düğmesine dokunun",
+  "@tapSpeakerToHearInstructions": {
+    "description": "TTS instructions text"
+  },
+  "ttsNotAvailableTapButtonToShowInstructions": "TTS mevcut değil. Talimatları göstermek için aşağıdaki düğmeye dokunun.",
+  "@ttsNotAvailableTapButtonToShowInstructions": {
+    "description": "TTS not available instructions text"
+  },
+  "retryTts": "TTS'yi Tekrar Dene",
+  "@retryTts": {
+    "description": "Retry TTS button text"
+  },
+  "speakNavigationInstructions": "Navigasyon Talimatlarını Seslendir",
+  "@speakNavigationInstructions": {
+    "description": "Speak navigation instructions button text"
+  },
+  "showNavigationInstructions": "Navigasyon Talimatlarını Göster",
+  "@showNavigationInstructions": {
+    "description": "Show navigation instructions button text"
+  },
+  "navigation": "Navigasyon",
+  "@navigation": {
+    "description": "Navigation section title"
   }
 }
