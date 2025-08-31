@@ -1,0 +1,233 @@
+{
+  "@@locale": "en",
+  "appTitle": "BrightWay",
+  "startPoint": "Start Point",
+  "endPoint": "End Point",
+  "calculatePath": "Calculate Path",
+  "pathFound": "Path Found",
+  "noPathAvailable": "No path available",
+  "calculatingPath": "Calculating path...",
+  "pathSteps": "Path: {steps} steps",
+  "@pathSteps": {
+    "description": "Number of steps in the path",
+    "placeholders": {
+      "steps": {
+        "type": "int"
+      }
+    }
+  },
+  "navigationInstructions": "Navigation Instructions",
+  "startFacing": "Start facing {direction}",
+  "@startFacing": {
+    "description": "Direction to start facing",
+    "placeholders": {
+      "direction": {
+        "type": "String"
+      }
+    }
+  },
+  "turnLeft": "Turn left",
+  "turnRight": "Turn right",
+  "turnAround": "Turn around",
+  "goStraight": "Go straight",
+  "takeStep": "Take 1 step forward",
+  "takeStepToDestination": "Take 1 step forward to reach {destination}",
+  "@takeStepToDestination": {
+    "description": "Step instruction to reach destination",
+    "placeholders": {
+      "destination": {
+        "type": "String"
+      }
+    }
+  },
+  "youHaveArrived": "You have arrived at {destination}",
+  "@youHaveArrived": {
+    "description": "Arrival message",
+    "placeholders": {
+      "destination": {
+        "type": "String"
+      }
+    }
+  },
+  "startingFrom": "Starting from {start}, face {direction}",
+  "@startingFrom": {
+    "description": "Starting instruction",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "direction": {
+        "type": "String"
+      }
+    }
+  },
+  "walkForward": "Walk forward one step",
+  "walkForwardToDestination": "Walk forward one step to reach {destination}",
+  "@walkForwardToDestination": {
+    "description": "Walk instruction to reach destination",
+    "placeholders": {
+      "destination": {
+        "type": "String"
+      }
+    }
+  },
+  "directionNorth": "north",
+  "directionSouth": "south",
+  "directionLeft": "left",
+  "directionRight": "right",
+  "pathfindingStartingAlgorithm": "Starting A* algorithm from {start} to {end}",
+  "@pathfindingStartingAlgorithm": {
+    "description": "Pathfinding algorithm start message",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "pathfindingGridSize": "Grid size: {rows}x{cols}",
+  "@pathfindingGridSize": {
+    "description": "Grid dimensions",
+    "placeholders": {
+      "rows": {
+        "type": "int"
+      },
+      "cols": {
+        "type": "int"
+      }
+    }
+  },
+  "pathfindingPathFound": "Path found after {iterations} iterations",
+  "@pathfindingPathFound": {
+    "description": "Path found message",
+    "placeholders": {
+      "iterations": {
+        "type": "int"
+      }
+    }
+  },
+  "pathfindingPathCalculated": "Path calculated: {steps} steps",
+  "@pathfindingPathCalculated": {
+    "description": "Path calculation result",
+    "placeholders": {
+      "steps": {
+        "type": "int"
+      }
+    }
+  },
+  "pathfindingNoPathFound": "No path found after {iterations} iterations",
+  "@pathfindingNoPathFound": {
+    "description": "No path found message",
+    "placeholders": {
+      "iterations": {
+        "type": "int"
+      }
+    }
+  },
+  "gridLegend": "Legend: [D] = Walkable (doors), [X] = Obstacle (blocks movement), [ ] = Empty space",
+  "gridNote": "Note: All items can be destinations, but only doors allow movement through them",
+  "gridRow": "Row {row}",
+  "@gridRow": {
+    "description": "Grid row label",
+    "placeholders": {
+      "row": {
+        "type": "int"
+      }
+    }
+  },
+  "itemToilet": "Toilet",
+  "itemTable": "Table",
+  "itemChair": "Chair",
+  "itemDoor": "Door",
+  "itemExitDoor": "Exit Door",
+  "itemWall": "Wall",
+  "itemObstacle": "Obstacle",
+  "errorPathCalculation": "Error calculating path: {error}",
+  "@errorPathCalculation": {
+    "description": "Path calculation error message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "errorTTSFailed": "Text-to-speech failed: {error}",
+  "@errorTTSFailed": {
+    "description": "TTS error message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "userWelcome": "Welcome!",
+  "@userWelcome": {
+    "description": "Welcome message for users"
+  },
+  "userPanel": "User Panel",
+  "@userPanel": {
+    "description": "User panel title"
+  },
+  "places": "Places",
+  "@places": {
+    "description": "Places section title"
+  },
+  "placesSubtitle": "Discover available places",
+  "@placesSubtitle": {
+    "description": "Places section subtitle"
+  },
+  "help": "Help",
+  "@help": {
+    "description": "Help section title"
+  },
+  "helpSubtitle": "Usage guide",
+  "@helpSubtitle": {
+    "description": "Help section subtitle"
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Settings section title"
+  },
+  "settingsSubtitle": "App settings",
+  "@settingsSubtitle": {
+    "description": "Settings section subtitle"
+  },
+  "about": "About",
+  "@about": {
+    "description": "About section title"
+  },
+  "aboutSubtitle": "App information",
+  "@aboutSubtitle": {
+    "description": "About section subtitle"
+  },
+  "helpTitle": "Help",
+  "@helpTitle": {
+    "description": "Help dialog title"
+  },
+  "helpContent": "Discovering Places:\n• Click on Places section to view available designs\n• Select a place to see its details\n• Listen to navigation instructions\n\nNavigation:\n• Use left, right, up, down directions\n• Get voice guidance with text-to-speech feature",
+  "@helpContent": {
+    "description": "Help dialog content"
+  },
+  "settingsTitle": "Settings",
+  "@settingsTitle": {
+    "description": "Settings dialog title"
+  },
+  "settingsContent": "Settings will be added soon...",
+  "@settingsContent": {
+    "description": "Settings dialog content"
+  },
+  "aboutTitle": "About",
+  "@aboutTitle": {
+    "description": "About dialog title"
+  },
+  "aboutContent": "Grid-based place navigation app for visually impaired users\n\nFeatures:\n• Grid-based place design\n• Shortest path finding with A* algorithm\n• Voice navigation with text-to-speech\n• Turkish language support",
+  "@aboutContent": {
+    "description": "About dialog content"
+  },
+  "ok": "OK",
+  "@ok": {
+    "description": "OK button text"
+  }
+}

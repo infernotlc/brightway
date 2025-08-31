@@ -46,6 +46,11 @@ dependencies:
   # Text-to-Speech for navigation
   flutter_tts: ^3.8.5
 
+  # Localization support
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
+
   # Accessibility support is built into Flutter framework
 
   # The following adds the Cupertino Icons font to your application.
@@ -68,6 +73,8 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  # Enable code generation for localization
+  generate: true
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

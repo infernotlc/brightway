@@ -4,7 +4,7 @@ import '../../core/blocs/auth_bloc.dart';
 import '../../core/models/user_model.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/admin/admin_screen.dart';
-import '../screens/user/user_screen.dart';
+import '../screens/user/user_main_screen.dart';
 
 class AppWrapper extends StatelessWidget {
   const AppWrapper({super.key});
@@ -40,7 +40,7 @@ class AppWrapper extends StatelessWidget {
     if (userData.isAdmin) {
       return AdminScreen(userData: userData);
     } else {
-      return UserScreen(userData: userData);
+      return UserMainScreen(userData: userData);
     }
   }
 }

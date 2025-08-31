@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'l10n/app_localizations.dart';
 import 'firebase_options.dart';
 import 'core/blocs/auth_bloc.dart';
 import 'core/services/firebase_auth_service.dart';
@@ -41,6 +43,18 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: AppConstants.appName,
         debugShowCheckedModeBanner: false,
+        // Enable localization
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('tr', 'TR'), // Turkish
+          Locale('en', 'US'), // English
+        ],
+        locale: const Locale('tr', 'TR'), // Set Turkish as default
         // Enable accessibility features
         showSemanticsDebugger: false, // Set to true for debugging accessibility
         theme: ThemeData(
