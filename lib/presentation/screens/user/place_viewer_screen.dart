@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../core/models/grid_models.dart';
 import '../../../core/services/design_service.dart';
+import '../../../core/blocs/language_bloc.dart';
 
 class PlaceViewerScreen extends StatefulWidget {
   final Design design;
@@ -112,34 +114,45 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.design.name),
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Place Header
-            _buildPlaceHeader(),
-            const SizedBox(height: 24),
+    return BlocBuilder<LanguageBloc, LanguageState>(
+      builder: (context, languageState) {
+        // Force rebuild when language changes
+        final currentLocale = languageState is LanguageLoaded 
+            ? languageState.locale 
+            : const Locale('tr', 'TR');
+        
+        final l10n = AppLocalizations.of(context)!;
+        
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(widget.design.name),
+            backgroundColor: Theme.of(context).primaryColor,
+            foregroundColor: Colors.white,
+          ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Place Header
+                _buildPlaceHeader(l10n),
+                const SizedBox(height: 24),
 
-            // Navigation Section
-            _buildNavigationSection(),
-            const SizedBox(height: 24),
+                // Navigation Section
+                _buildNavigationSection(l10n),
+                const SizedBox(height: 24),
 
-            // Path Display
-            if (_shortestPath.isNotEmpty) _buildPathDisplay(),
-          ],
-        ),
-      ),
+                // Path Display
+                if (_shortestPath.isNotEmpty) _buildPathDisplay(l10n),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildPlaceHeader() {
+  Widget _buildPlaceHeader(AppLocalizations l10n) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -215,12 +228,12 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
     );
   }
 
-  Widget _buildNavigationSection() {
+  Widget _buildNavigationSection(AppLocalizations l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Navigation',
+          l10n.navigation,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.bold,
           ),
@@ -229,38 +242,35 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
 
         // Start Point Selection
         _buildPointSelector(
-          title: 'Start Point',
+          title: l10n.startPoint,
           selectedItem: _startPoint,
           onTap: () => _showItemSelectionDialog(true),
           icon: Icons.play_arrow,
           color: Colors.green,
         ),
+
         const SizedBox(height: 16),
 
         // End Point Selection
         _buildPointSelector(
-          title: 'End Point',
+          title: l10n.endPoint,
           selectedItem: _endPoint,
           onTap: () => _showItemSelectionDialog(false),
           icon: Icons.flag,
           color: Colors.red,
         ),
+
         const SizedBox(height: 24),
 
-        // Go Button
+        // Calculate Path Button
         SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
-            onPressed: (_startPoint != null && _endPoint != null && !_isCalculatingPath)
-                ? _calculateAndNavigate
-                : null,
+            onPressed: _startPoint != null && _endPoint != null ? _calculateAndNavigate : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).primaryColor,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
             ),
             icon: _isCalculatingPath
                 ? const SizedBox(
@@ -273,7 +283,7 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
                   )
                 : const Icon(Icons.directions),
             label: Text(
-              _isCalculatingPath ? 'Calculating...' : 'Go!',
+              _isCalculatingPath ? l10n.calculating : l10n.go,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
@@ -289,6 +299,8 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
     required IconData icon,
     required Color color,
   }) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -325,7 +337,7 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        selectedItem?.name ?? 'Select $title',
+                        selectedItem?.name ?? l10n.selectPoint(title),
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: selectedItem != null ? color : Colors.grey[600],
@@ -333,7 +345,7 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
                       ),
                       if (selectedItem != null)
                         Text(
-                          'Position: (${selectedItem.row + 1}, ${selectedItem.col + 1})',
+                          l10n.positionAt(selectedItem.row + 1, selectedItem.col + 1),
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey[600],
@@ -355,12 +367,12 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
     );
   }
 
-  Widget _buildPathDisplay() {
+  Widget _buildPathDisplay(AppLocalizations l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Navigation Path',
+          l10n.navigationPath,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.bold,
           ),
@@ -419,7 +431,7 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
                          Icon(Icons.info, color: Colors.blue[700], size: 20),
                          const SizedBox(width: 8),
                          Text(
-                           'Navigation Instructions',
+                           l10n.navigationInstructions,
                            style: TextStyle(
                              fontWeight: FontWeight.bold,
                              color: Colors.blue[700],
@@ -429,7 +441,7 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
                      ),
                      const SizedBox(height: 8),
                      Text(
-                       'Total steps: ${_shortestPath.length}',
+                       l10n.totalSteps(_shortestPath.length),
                        style: TextStyle(color: Colors.blue[600]),
                      ),
                      const SizedBox(height: 8),
@@ -446,7 +458,7 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
                            crossAxisAlignment: CrossAxisAlignment.start,
                            children: [
                              Text(
-                               'Step-by-step directions:',
+                               l10n.stepByStepDirections,
                                style: TextStyle(
                                  fontWeight: FontWeight.bold,
                                  color: Colors.blue[700],
@@ -473,8 +485,8 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
                      ],
                      Text(
                        _isTTSAvailable 
-                         ? 'Tap the speaker button to hear navigation instructions'
-                         : 'TTS not available. Tap the button below to show instructions.',
+                         ? l10n.tapSpeakerToHearInstructions
+                         : l10n.ttsNotAvailableTapButtonToShowInstructions,
                        style: TextStyle(
                          color: Colors.blue[600],
                          fontSize: 12,
@@ -486,7 +498,7 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
                        TextButton.icon(
                          onPressed: _retryTTSInitialization,
                          icon: const Icon(Icons.refresh, size: 16),
-                         label: const Text('Retry TTS'),
+                         label: Text(l10n.retryTts),
                          style: TextButton.styleFrom(
                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                          ),
@@ -510,8 +522,8 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
                   ),
                   icon: Icon(_isTTSAvailable ? Icons.volume_up : Icons.info),
                   label: Text(_isTTSAvailable 
-                    ? 'Speak Navigation Instructions' 
-                    : 'Show Navigation Instructions'),
+                    ? l10n.speakNavigationInstructions
+                    : l10n.showNavigationInstructions),
                 ),
               ),
             ],
@@ -631,7 +643,7 @@ class _PlaceViewerScreenState extends State<PlaceViewerScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
         ],
       ),
