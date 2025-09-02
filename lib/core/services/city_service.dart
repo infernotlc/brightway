@@ -23,10 +23,19 @@ class CityService {
             .map((cityJson) => City.fromJson(cityJson))
             .toList();
         
-        // Sort cities alphabetically by name
-        cities.sort((a, b) => a.name.compareTo(b.name));
+        // Remove duplicates based on city name
+        final uniqueCities = <String, City>{};
+        for (final city in cities) {
+          uniqueCities[city.name] = city;
+        }
+        final deduplicatedCities = uniqueCities.values.toList();
         
-        return cities;
+        // Sort cities alphabetically by name
+        deduplicatedCities.sort((a, b) => a.name.compareTo(b.name));
+        
+        print('Loaded ${deduplicatedCities.length} unique cities from API');
+        
+        return deduplicatedCities;
       } else {
         throw Exception('Failed to load cities: ${response.statusCode}');
       }

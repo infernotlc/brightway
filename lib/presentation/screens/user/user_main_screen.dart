@@ -4,7 +4,7 @@ import '../../../core/blocs/auth_bloc.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../l10n/app_localizations.dart';
-import 'user_screen.dart';
+import 'available_place_screen.dart';
 import 'settings_screen.dart';
 
 class UserMainScreen extends StatelessWidget {

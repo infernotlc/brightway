@@ -5,6 +5,7 @@ class UserModel {
   final String email;
   final String role;
   final String? displayName;
+  final String? city;
   final DateTime createdAt;
   final DateTime lastLoginAt;
 
@@ -13,6 +14,7 @@ class UserModel {
     required this.email,
     required this.role,
     this.displayName,
+    this.city,
     required this.createdAt,
     required this.lastLoginAt,
   });
@@ -23,6 +25,7 @@ class UserModel {
       email: map['email'] ?? '',
       role: map['role'] ?? 'user',
       displayName: map['displayName'],
+      city: map['city'],
       createdAt: (map['createdAt'] as Timestamp).toDate(),
       lastLoginAt: (map['lastLoginAt'] as Timestamp).toDate(),
     );
@@ -33,6 +36,7 @@ class UserModel {
       'email': email,
       'role': role,
       'displayName': displayName,
+      'city': city,
       'createdAt': createdAt,
       'lastLoginAt': lastLoginAt,
     };
@@ -43,6 +47,7 @@ class UserModel {
     String? email,
     String? role,
     String? displayName,
+    String? city,
     DateTime? createdAt,
     DateTime? lastLoginAt,
   }) {
@@ -51,6 +56,7 @@ class UserModel {
       email: email ?? this.email,
       role: role ?? this.role,
       displayName: displayName ?? this.displayName,
+      city: city ?? this.city,
       createdAt: createdAt ?? this.createdAt,
       lastLoginAt: lastLoginAt ?? this.lastLoginAt,
     );

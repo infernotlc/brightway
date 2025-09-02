@@ -3,6 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import '../../../core/blocs/auth_bloc.dart';
 import '../../../core/models/user_model.dart';
+import '../../../core/models/city_model.dart';
+import '../../../core/services/city_service.dart';
+import '../../../core/services/user_service.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../core/blocs/language_bloc.dart';
@@ -23,11 +26,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _selectedLanguage = 'tr'; // Default to Turkish
   bool _isLoading = false;
   FlutterTts _flutterTts = FlutterTts();
+  
+  // City selection state
+  String? _selectedCity;
+  List<City> _cities = [];
+  bool _isLoadingCities = false;
 
   @override
   void initState() {
     super.initState();
     _initializeTTS();
+    _loadCities();
+    _loadUserCity();
   }
 
   @override
@@ -49,6 +59,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await _flutterTts.setSpeechRate(0.5);
     await _flutterTts.setVolume(1.0);
     await _flutterTts.setPitch(1.0);
+  }
+
+  void _loadCities() async {
+    setState(() {
+      _isLoadingCities = true;
+    });
+    
+    try {
+      final cities = await CityService.fetchCities();
+      setState(() {
+        _cities = cities;
+        _isLoadingCities = false;
+      });
+    } catch (e) {
+      print('Error loading cities: $e');
+      setState(() {
+        _isLoadingCities = false;
+      });
+    }
+  }
+
+  void _loadUserCity() async {
+    try {
+      final userCity = await UserService.getUserCity(widget.userData.id);
+      setState(() {
+        _selectedCity = userCity;
+      });
+    } catch (e) {
+      print('Error loading user city: $e');
+    }
   }
 
   @override
@@ -176,11 +216,119 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
               const SizedBox(height: 24),
 
+              // City Section
+              Text(
+                'City Preference',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // City Selection
+              Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.location_city,
+                            color: Theme.of(context).primaryColor,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Select Your City',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      if (_isLoadingCities)
+                        const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(16),
+                            child: CircularProgressIndicator(),
+                          ),
+                        )
+                      else
+                        DropdownButtonFormField<String>(
+                          value: _getValidSelectedCity(),
+                          decoration: InputDecoration(
+                            hintText: 'Choose your city',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                          ),
+                          items: [
+                            const DropdownMenuItem<String>(
+                              value: null,
+                              child: Text('No city selected'),
+                            ),
+                            ..._cities.map((city) => DropdownMenuItem<String>(
+                              value: city.name,
+                              child: Text(city.name),
+                            )),
+                          ],
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              _selectedCity = newValue;
+                            });
+                          },
+                        ),
+                      if (_selectedCity != null) ...[
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.green.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.green.shade200),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.check_circle,
+                                color: Colors.green.shade600,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Selected: $_selectedCity',
+                                style: TextStyle(
+                                  color: Colors.green.shade700,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
               // Apply Button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _isLoading ? null : _applyLanguageChange,
+                  onPressed: _isLoading ? null : _applyChanges,
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     backgroundColor: Theme.of(context).primaryColor,
@@ -292,7 +440,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Future<void> _applyLanguageChange() async {
+  Future<void> _applyChanges() async {
     setState(() {
       _isLoading = true;
     });
@@ -304,14 +452,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
       // Change TTS language
       await _changeTTSLanguage();
       
+      // Save city preference
+      await _saveCityPreference();
+      
       // Show success message
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
               _selectedLanguage == 'tr' 
-                ? 'Dil Türkçe olarak değiştirildi' 
-                : 'Language changed to English'
+                ? 'Ayarlar başarıyla kaydedildi' 
+                : 'Settings saved successfully'
             ),
             backgroundColor: Colors.green,
             duration: const Duration(seconds: 3),
@@ -327,8 +478,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           SnackBar(
             content: Text(
               _selectedLanguage == 'tr' 
-                ? 'Dil değiştirilirken hata oluştu: $e' 
-                : 'Error changing language: $e'
+                ? 'Ayarlar kaydedilirken hata oluştu: $e' 
+                : 'Error saving settings: $e'
             ),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 3),
@@ -373,6 +524,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
     } catch (e) {
       print('Error changing TTS language: $e');
       // Don't throw here, as TTS failure shouldn't prevent language change
+    }
+  }
+
+  Future<void> _saveCityPreference() async {
+    try {
+      if (_selectedCity != null) {
+        await UserService.updateUserCity(widget.userData.id, _selectedCity!);
+        print('City preference saved: $_selectedCity');
+      }
+    } catch (e) {
+      print('Error saving city preference: $e');
+      rethrow;
+    }
+  }
+
+  /// Get a valid selected city that exists in the cities list
+  String? _getValidSelectedCity() {
+    if (_selectedCity == null) return null;
+    
+    // Check if the selected city exists in the cities list
+    final cityExists = _cities.any((city) => city.name == _selectedCity);
+    
+    if (cityExists) {
+      return _selectedCity;
+    } else {
+      // If the selected city doesn't exist in the list, return null
+      print('Selected city "$_selectedCity" not found in cities list, resetting to null');
+      return null;
     }
   }
 }
