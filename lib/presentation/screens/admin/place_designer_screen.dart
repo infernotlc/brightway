@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/models/grid_models.dart';
+import '../../../core/models/city_model.dart';
 import '../../../core/services/design_service.dart';
+import '../../../core/services/city_service.dart';
 import '../../../core/widgets/accessible_widgets.dart';
 import '../../../core/blocs/auth_bloc.dart';
 
@@ -41,6 +43,11 @@ class _PlaceDesignerScreenState extends State<PlaceDesignerScreen>
   // Current design state
   String? _currentDesignId;
   List<Design> _userDesigns = [];
+  
+  // City selection state
+  String? _selectedCity;
+  List<City> _cities = [];
+  bool _isLoadingCities = false;
 
   @override
   void initState() {
@@ -535,6 +542,7 @@ class _PlaceDesignerScreenState extends State<PlaceDesignerScreen>
       _currentDesignId = design.id;
       _designNameController.text = design.name;
       _designDescriptionController.text = design.description;
+      _selectedCity = design.city;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -559,54 +567,62 @@ class _PlaceDesignerScreenState extends State<PlaceDesignerScreen>
   void _showSaveDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(_currentDesignId != null ? 'Update Design' : 'Save Design'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            buildAccessibleTextFormField(
-              controller: _designNameController,
-              label: 'Design Name',
-              hint: 'Enter a name for your design',
-              validationRule: 'Design name is required',
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            title: Text(_currentDesignId != null ? 'Update Design' : 'Save Design'),
+            content: SingleChildScrollView(
+              child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                buildAccessibleTextFormField(
+                  controller: _designNameController,
+                  label: 'Design Name',
+                  hint: 'Enter a name for your design',
+                  validationRule: 'Design name is required',
+                ),
+                const SizedBox(height: 16),
+                buildAccessibleTextFormField(
+                  controller: _designDescriptionController,
+                  label: 'Description',
+                  hint: 'Enter a description for your design',
+                  validationRule: 'Description is required',
+                ),
+                  const SizedBox(height: 16),
+                  // City Selection
+                  _buildCitySelectionForDialog(setDialogState),
+              ],
+              ),
             ),
-            const SizedBox(height: 16),
-            buildAccessibleTextFormField(
-              controller: _designDescriptionController,
-              label: 'Description',
-              hint: 'Enter a description for your design',
-              validationRule: 'Description is required',
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          if (_currentDesignId != null)
-            ElevatedButton(
-              onPressed: _isSaving ? null : _saveAsNew,
-              child: _isSaving
-                  ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-                  : const Text('New'),
-            ),
-          ElevatedButton(
-            onPressed: _isSaving ? null : _saveDesign,
-            child: _isSaving
-                ? const SizedBox(
-              height: 20,
-              width: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-                : Text(_currentDesignId != null ? 'Update' : 'Save'),
-          ),
-
-        ],
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              if (_currentDesignId != null)
+                ElevatedButton(
+                  onPressed: _isSaving ? null : _saveAsNew,
+                  child: _isSaving
+                      ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                      : const Text('New'),
+                ),
+              ElevatedButton(
+                onPressed: _isSaving ? null : _saveDesign,
+                child: _isSaving
+                    ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+                    : Text(_currentDesignId != null ? 'Update' : 'Save'),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -614,10 +630,11 @@ class _PlaceDesignerScreenState extends State<PlaceDesignerScreen>
   /// Save current design as a new one
   Future<void> _saveAsNew() async {
     if (_designNameController.text.trim().isEmpty ||
-        _designDescriptionController.text.trim().isEmpty) {
+        _designDescriptionController.text.trim().isEmpty ||
+        _selectedCity == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please fill in all fields'),
+          content: Text('Please fill in all fields including city selection'),
           backgroundColor: Colors.red,
         ),
       );
@@ -684,6 +701,7 @@ class _PlaceDesignerScreenState extends State<PlaceDesignerScreen>
         cols: _gridConfig!.cols,
         grid: _grid,
         createdBy: userId,
+        city: _selectedCity,
       );
 
       // Reset to new design mode
@@ -715,10 +733,11 @@ class _PlaceDesignerScreenState extends State<PlaceDesignerScreen>
 
   Future<void> _saveDesign() async {
     if (_designNameController.text.trim().isEmpty ||
-        _designDescriptionController.text.trim().isEmpty) {
+        _designDescriptionController.text.trim().isEmpty ||
+        _selectedCity == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please fill in all fields'),
+          content: Text('Please fill in all fields including city selection'),
           backgroundColor: Colors.red,
         ),
       );
@@ -768,6 +787,7 @@ class _PlaceDesignerScreenState extends State<PlaceDesignerScreen>
             'rows': _gridConfig!.rows,
             'cols': _gridConfig!.cols,
             'items': _gridToDesignItems(),
+            'city': _selectedCity,
             'updatedAt': DateTime.now(),
           },
         );
@@ -789,6 +809,7 @@ class _PlaceDesignerScreenState extends State<PlaceDesignerScreen>
           cols: _gridConfig!.cols,
           grid: _grid,
           createdBy: userId,
+          city: _selectedCity,
         );
 
         setState(() {
@@ -956,6 +977,7 @@ class _PlaceDesignerScreenState extends State<PlaceDesignerScreen>
             _grid = [];
             _designNameController.text = 'My Design';
             _designDescriptionController.text = 'A custom place design';
+            _selectedCity = null;
           });
         }
       } catch (e) {
@@ -969,5 +991,354 @@ class _PlaceDesignerScreenState extends State<PlaceDesignerScreen>
     }
   }
 
+  /// Build city selection widget for dialog
+  Widget _buildCitySelectionForDialog(StateSetter setDialogState) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'City *',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        InkWell(
+          onTap: () async {
+            final selectedCity = await _showCitySelectionDialog();
+            print('Dialog returned: $selectedCity');
+            if (selectedCity != null) {
+              setDialogState(() {
+                _selectedCity = selectedCity;
+                print('Updated _selectedCity to: $_selectedCity');
+              });
+            }
+          },
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: _selectedCity == null ? Colors.red.shade300 : Colors.grey.shade300,
+                width: _selectedCity == null ? 2 : 1,
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.location_city,
+                  color: _selectedCity == null ? Colors.red.shade600 : Colors.grey.shade600,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    _selectedCity ?? 'Select a city (required)',
+                    style: TextStyle(
+                      color: _selectedCity != null ? Colors.black87 : Colors.red.shade600,
+                    ),
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_drop_down,
+                  color: Colors.grey.shade600,
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (_selectedCity != null) ...[
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Icon(
+                Icons.check_circle,
+                color: Colors.green.shade600,
+                size: 16,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                'Selected: $_selectedCity',
+                style: TextStyle(
+                  color: Colors.green.shade600,
+                  fontSize: 12,
+                ),
+              ),
+              const Spacer(),
+              TextButton(
+                onPressed: () {
+                  setDialogState(() {
+                    _selectedCity = null;
+                    print('Cleared _selectedCity');
+                  });
+                },
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  minimumSize: Size.zero,
+                ),
+                child: Text(
+                  'Clear',
+                  style: TextStyle(
+                    color: Colors.red.shade600,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
 
+  /// Build city selection widget
+  Widget _buildCitySelection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'City *',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        InkWell(
+          onTap: () async {
+            final selectedCity = await _showCitySelectionDialog();
+            print('Dialog returned: $selectedCity');
+            if (selectedCity != null) {
+              setState(() {
+                _selectedCity = selectedCity;
+                print('Updated _selectedCity to: $_selectedCity');
+              });
+            }
+          },
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: _selectedCity == null ? Colors.red.shade300 : Colors.grey.shade300,
+                width: _selectedCity == null ? 2 : 1,
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.location_city,
+                  color: _selectedCity == null ? Colors.red.shade600 : Colors.grey.shade600,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    _selectedCity ?? 'Select a city (required)',
+                    style: TextStyle(
+                      color: _selectedCity != null ? Colors.black87 : Colors.red.shade600,
+                    ),
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_drop_down,
+                  color: Colors.grey.shade600,
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (_selectedCity != null) ...[
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Icon(
+                Icons.check_circle,
+                color: Colors.green.shade600,
+                size: 16,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                'Selected: $_selectedCity',
+                style: TextStyle(
+                  color: Colors.green.shade600,
+                  fontSize: 12,
+                ),
+              ),
+              const Spacer(),
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    _selectedCity = null;
+                    print('Cleared _selectedCity');
+                  });
+                },
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  minimumSize: Size.zero,
+                ),
+                child: Text(
+                  'Clear',
+                  style: TextStyle(
+                    color: Colors.red.shade600,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+
+  /// Show city selection dialog
+  Future<String?> _showCitySelectionDialog() async {
+    return await showDialog<String>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          // Load cities if not already loaded
+          if (_cities.isEmpty && !_isLoadingCities) {
+            _loadCitiesForDialog(setDialogState);
+          }
+
+          return AlertDialog(
+            title: const Text('Select City'),
+            content: SizedBox(
+              width: double.maxFinite,
+              height: 400,
+              child: _isLoadingCities
+                  ? const Center(child: CircularProgressIndicator())
+                  : _cities.isEmpty
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.location_off,
+                              size: 48,
+                              color: Colors.grey.shade400,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No cities available',
+                              style: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            TextButton(
+                              onPressed: () async {
+                                await _loadCitiesForDialog(setDialogState);
+                              },
+                              child: const Text('Load Cities'),
+                            ),
+                          ],
+                        )
+                      : ListView.builder(
+                          itemCount: _cities.length,
+                          itemBuilder: (context, index) {
+                            final city = _cities[index];
+                            final isSelected = _selectedCity == city.name;
+                            return ListTile(
+                              leading: Icon(
+                                Icons.location_city,
+                                color: isSelected ? Colors.blue : Colors.grey.shade600,
+                              ),
+                              title: Text(
+                                city.name,
+                                style: TextStyle(
+                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                  color: isSelected ? Colors.blue : Colors.black87,
+                                ),
+                              ),
+                              trailing: isSelected
+                                  ? Icon(
+                                      Icons.check_circle,
+                                      color: Colors.blue,
+                                    )
+                                  : null,
+                              onTap: () {
+                                print('Selected city: ${city.name}');
+                                Navigator.pop(context, city.name);
+                              },
+                            );
+                          },
+                        ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  /// Load cities from API
+  Future<void> _loadCities() async {
+    if (_cities.isNotEmpty) return; // Already loaded
+
+    setState(() {
+      _isLoadingCities = true;
+    });
+
+    try {
+      final cities = await CityService.fetchCities();
+      setState(() {
+        _cities = cities;
+        _isLoadingCities = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingCities = false;
+      });
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load cities: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Load cities for dialog with proper state management
+  Future<void> _loadCitiesForDialog(StateSetter setDialogState) async {
+    if (_cities.isNotEmpty) return; // Already loaded
+
+    setDialogState(() {
+      _isLoadingCities = true;
+    });
+
+    try {
+      final cities = await CityService.fetchCities();
+      setDialogState(() {
+        _cities = cities;
+        _isLoadingCities = false;
+      });
+    } catch (e) {
+      setDialogState(() {
+        _isLoadingCities = false;
+      });
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load cities: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 }

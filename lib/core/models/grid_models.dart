@@ -340,6 +340,7 @@ class Design {
   final String createdBy;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String? city;
 
   const Design({
     required this.id,
@@ -351,6 +352,7 @@ class Design {
     required this.createdBy,
     required this.createdAt,
     required this.updatedAt,
+    this.city,
   });
 
   factory Design.fromMap(Map<String, dynamic> map, String id) {
@@ -366,6 +368,7 @@ class Design {
       createdBy: map['createdBy'] ?? '',
       createdAt: (map['createdAt'] as Timestamp).toDate(),
       updatedAt: (map['updatedAt'] as Timestamp).toDate(),
+      city: map['city'],
     );
   }
 
@@ -379,6 +382,7 @@ class Design {
       'createdBy': createdBy,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
+      'city': city,
     };
   }
 
