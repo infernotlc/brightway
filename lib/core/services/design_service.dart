@@ -14,6 +14,7 @@ class DesignService {
     required int cols,
     required List<List<GridCell>> grid,
     required String createdBy,
+    String? city,
   }) async {
     try {
       // Convert grid to design items
@@ -46,6 +47,7 @@ class DesignService {
         createdBy: createdBy,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
+        city: city,
       );
 
       // Save only to user's designs subcollection
