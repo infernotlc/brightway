@@ -170,6 +170,21 @@ class DesignService {
         .toList());
   }
 
+  /// Get admin designs filtered by city
+  static Stream<List<Design>> getAdminDesignsByCity(String? city) {
+    if (city == null || city.isEmpty) {
+      return getAdminDesigns();
+    }
+    
+    return _firestore
+        .collectionGroup('designs')
+        .where('city', isEqualTo: city)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+        .map((doc) => Design.fromMap(doc.data(), doc.id))
+        .toList());
+  }
+
   /// Get admin user display name by user ID
   static Future<String> getAdminDisplayName(String userId) async {
     try {
