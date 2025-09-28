@@ -45,67 +45,6 @@ lib/
 └── main.dart            # App entry point
 ```
 
-## Setup Instructions
-
-### 1. Prerequisites
-
-- Flutter SDK (3.9.0 or higher)
-- Dart SDK
-- Android Studio / VS Code
-- Firebase project
-
-### 2. Firebase Setup
-
-1. **Create Firebase Project**
-   - Go to [Firebase Console](https://console.firebase.google.com/)
-   - Create a new project or use existing one
-
-2. **Enable Authentication**
-   - Go to Authentication > Sign-in method
-   - Enable Email/Password authentication
-
-3. **Setup Firestore Database**
-   - Go to Firestore Database
-   - Create database in test mode
-   - Set up security rules (see below)
-
-4. **Configure Flutter App**
-   - Add your Android/iOS apps to Firebase project
-   - Download and add configuration files:
-     - `google-services.json` for Android (place in `android/app/`)
-     - `GoogleService-Info.plist` for iOS (place in `ios/Runner/`)
-
-### 3. Firestore Security Rules
-
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // Users can read/write their own data
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-    
-    // Admins can read all user data
-    match /users/{userId} {
-      allow read: if request.auth != null && 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-  }
-}
-```
-
-### 4. Install Dependencies
-
-```bash
-flutter pub get
-```
-
-### 5. Run the App
-
-```bash
-flutter run
-```
 
 ## Usage
 
@@ -121,28 +60,7 @@ flutter run
 - **Admin Users**: Navigate to admin dashboard with management features
 - **Regular Users**: Navigate to user dashboard with basic features
 
-### Making a User Admin
 
-To assign admin role to a user, you need to manually update the user's document in Firebase:
-
-1. **Go to Firebase Console** → Firestore Database
-2. **Navigate to** `users` collection
-3. **Find the user** you want to make admin
-4. **Edit the document** and change the `role` field from `"user"` to `"admin"`
-5. **Save the changes**
-
-**Example document structure:**
-```json
-{
-  "email": "admin@example.com",
-  "role": "admin",
-  "displayName": "Admin User",
-  "createdAt": "2024-01-01T00:00:00.000Z",
-  "lastLoginAt": "2024-01-01T00:00:00.000Z"
-}
-```
-
-**Note:** This approach is more secure as it prevents unauthorized role changes from within the app.
 
 ## Architecture Overview
 
@@ -153,7 +71,7 @@ To assign admin role to a user, you need to manually update the user's document 
 - **Constants**: App-wide configuration
 
 ### Presentation Layer
-- **Screens**: Full-page UI components
+- *Screens**: Full-page UI components
 - **Widgets**: Reusable UI components
 - **Navigation**: Role-based routing
 
@@ -188,6 +106,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 For support and questions, please open an issue in the GitHub repository.
 
-
-<img width="768" height="125" alt="app_flow_diagram" src="https://github.com/user-attachments/assets/0539fbff-959a-4cc7-a709-57edb1b56a11" />
 
